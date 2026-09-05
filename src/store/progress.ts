@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react'
+import { SURAH_START_JUZ } from '../data/juzNames'
 
 export interface Position {
+  juz: number
   surah: number
   ayah: number
 }
@@ -14,7 +16,7 @@ interface ProgressState {
   bookmarks: Position[]
 }
 
-const KEY = 'quran-progress-v1'
+const KEY = 'quran-progress-v2'
 
 function load(): ProgressState {
   try {
@@ -22,6 +24,16 @@ function load(): ProgressState {
     if (raw) {
       const p = JSON.parse(raw) as Partial<ProgressState>
       return { lastRead: p.lastRead ?? null, bookmarks: p.bookmarks ?? [] }
+    }
+    // Migrate v1 (surah/ayah only) by assuming the surah's starting parah.
+    const old = localStorage.getItem('quran-progress-v1')
+    if (old) {
+      const p = JSON.parse(old) as { lastRead?: { surah: number; ayah: number; at: number } | null; bookmarks?: { surah: number; ayah: number }[] }
+      const withJuz = <T extends { surah: number }>(x: T) => ({ ...x, juz: SURAH_START_JUZ[x.surah - 1] ?? 1 })
+      return {
+        lastRead: p.lastRead ? withJuz(p.lastRead) : null,
+        bookmarks: (p.bookmarks ?? []).map(withJuz),
+      }
     }
   } catch {
     /* ignore */
@@ -51,19 +63,25 @@ export function useProgress(): ProgressState {
   return useSyncExternalStore(subscribe, () => state)
 }
 
+const same = (a: Position, b: Position) => a.surah === b.surah && a.ayah === b.ayah
+
 export function setLastRead(pos: Position) {
-  if (state.lastRead && state.lastRead.surah === pos.surah && state.lastRead.ayah === pos.ayah) return
+  if (state.lastRead && same(state.lastRead, pos)) return
   commit({ ...state, lastRead: { ...pos, at: Date.now() } })
 }
 
 export function isBookmarked(pos: Position): boolean {
-  return state.bookmarks.some((b) => b.surah === pos.surah && b.ayah === pos.ayah)
+  return state.bookmarks.some((b) => same(b, pos))
 }
 
 export function toggleBookmark(pos: Position) {
-  const exists = isBookmarked(pos)
-  const bookmarks = exists
-    ? state.bookmarks.filter((b) => !(b.surah === pos.surah && b.ayah === pos.ayah))
+  const bookmarks = isBookmarked(pos)
+    ? state.bookmarks.filter((b) => !same(b, pos))
     : [...state.bookmarks, pos].sort((a, b) => a.surah - b.surah || a.ayah - b.ayah)
   commit({ ...state, bookmarks })
+}
+
+/** Route to open a position in the reader. */
+export function positionUrl(p: Position): string {
+  return `/juz/${p.juz}?ayah=${p.surah}:${p.ayah}`
 }

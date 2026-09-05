@@ -4,12 +4,13 @@ import { toUrduDigits } from '../data/surahNamesUrdu'
 
 interface Props {
   open: boolean
+  title: string
   max: number
   onClose: () => void
-  onGo: (ayah: number) => void
+  onGo: (n: number) => void
 }
 
-export function GoToAyahDialog({ open, max, onClose, onGo }: Props) {
+export function GoToDialog({ open, title, max, onClose, onGo }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const [value, setValue] = useState('')
 
@@ -37,7 +38,7 @@ export function GoToAyahDialog({ open, max, onClose, onGo }: Props) {
     <dialog ref={ref} className="goto" onClose={onClose} aria-labelledby="goto-title">
       <form onSubmit={submit}>
         <h2 id="goto-title" style={{ margin: 0, fontSize: 'calc(var(--ui-size) * 1.15)' }}>
-          کس آیت پر جانا ہے؟
+          {title}
         </h2>
         <p className="muted" style={{ margin: '4px 0 0' }}>
           ۱ سے {toUrduDigits(max)} تک
@@ -50,7 +51,7 @@ export function GoToAyahDialog({ open, max, onClose, onGo }: Props) {
           max={max}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          aria-label="آیت نمبر"
+          aria-label="نمبر"
           autoFocus
         />
         <div className="goto__actions">

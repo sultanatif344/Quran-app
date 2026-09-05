@@ -1,8 +1,10 @@
 import { get, set, del, keys } from 'idb-keyval'
-import type { ArabicScript, SurahData, SurahMeta } from '../api/alquran'
+import type { SurahMeta } from '../api/alquran'
+import type { JuzData } from '../api/juz'
+import type { ArabicScript } from '../api/quranCom'
 
 const LIST_KEY = 'surah-list'
-const surahKey = (n: number, edition: string, script: ArabicScript) => `surah:${n}:${edition}:${script}`
+const juzKey = (n: number, edition: string, script: ArabicScript) => `juz:${n}:${edition}:${script}`
 
 export async function cacheSurahList(list: SurahMeta[]) {
   try {
@@ -20,30 +22,26 @@ export async function getCachedSurahList(): Promise<SurahMeta[] | undefined> {
   }
 }
 
-export async function cacheSurah(data: SurahData) {
+export async function cacheJuz(data: JuzData) {
   try {
-    await set(surahKey(data.meta.number, data.urduEdition, data.script), data)
+    await set(juzKey(data.juz, data.urduEdition, data.script), data)
   } catch {
     /* ignore */
   }
 }
 
-export async function getCachedSurah(
-  n: number,
-  edition: string,
-  script: ArabicScript,
-): Promise<SurahData | undefined> {
+export async function getCachedJuz(n: number, edition: string, script: ArabicScript): Promise<JuzData | undefined> {
   try {
-    return await get<SurahData>(surahKey(n, edition, script))
+    return await get<JuzData>(juzKey(n, edition, script))
   } catch {
     return undefined
   }
 }
 
-export async function countCachedSurahs(): Promise<number> {
+export async function countCachedJuz(): Promise<number> {
   try {
     const all = await keys()
-    return all.filter((k) => typeof k === 'string' && k.startsWith('surah:')).length
+    return all.filter((k) => typeof k === 'string' && k.startsWith('juz:')).length
   } catch {
     return 0
   }

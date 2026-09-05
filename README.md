@@ -5,14 +5,17 @@ Arabic (Uthmani script) and an Urdu translation directly beneath it.
 
 ## Features
 
-- Mushaf-style pages: continuous justified Arabic in a framed page with ayah-end markers,
-  one printed page (Madani mushaf numbering) at a time, with para and page number in the header
-- Translation on tap: touch any ayah to open a bottom sheet with its Urdu (Nastaliq), or switch
-  to "translation below each ayah" in Settings
+- Lafzi Tarjuma (word-by-word) layout modelled on the Anjuman Himayat-e-Islam print: for every
+  ayah, the Arabic line, then a ruled row of boxes with each Arabic word above its Urdu meaning,
+  then the running Urdu translation, all inside the printed-style frame
+- Organised by parah (juz): the home screen lists the 30 parahs by their traditional names, and
+  the reader shows one printed mushaf page at a time with parah, surah, and page number in the
+  header. A surah list (with search) is one tap away and opens the parah where that surah begins
+- Surah headers with a Bismillah row (with its own word boxes and translation) at every surah start
 - Two Arabic scripts: Indo-Pak style in the PDMS Saleem QuranFont (default) or Uthmani in Amiri Quran.
   The PDMS font (Pakistan Data Management Services, 2007) is free for personal, non-commercial use
   and is self-hosted from `public/fonts/`.
-- Adjustable text size (A− / A+)
+- Adjustable text size (A− / A+), seven steps from 60% to 150%
 - Chestnut-brown day theme and a warm night theme
 - Surah list with search by number, Arabic, English or Urdu name
 - "Continue reading" card that remembers the last ayah you were looking at
@@ -35,27 +38,28 @@ Regenerate the PWA icons (pure Node, no dependencies):
 node scripts/make-icons.mjs
 ```
 
-## Data source
+## Data sources
 
-Text and translations come from the free, key-less **Al Quran Cloud** API
-(`https://api.alquran.cloud/v1`). One request per surah fetches the Arabic
-`quran-uthmani` edition and the chosen Urdu edition together.
+Both are free and need no API key. Everything is fetched one parah at a time and cached in
+IndexedDB, so a parah works offline after its first visit.
 
-Note: the API prepends the Bismillah to ayah 1 of every surah except 1 and 9. The app strips it
-(see `stripBismillah` in `src/api/alquran.ts`) and renders it once as a header.
-
-A documented fallback, not wired in, is the Quran.com API v4 (`https://api.quran.com/api/v4`),
-where the Jalandhari translation has id 234.
+- **Quran.com API v4** (`https://api.quran.com/api/v4/verses/by_juz/{n}?language=ur&words=true`)
+  for the Arabic text (Indo-Pak or Uthmani orthography) and the word-by-word Urdu meanings.
+  Its Indo-Pak text carries private-use glyph codes for Quran.com's own font; `cleanArabic` in
+  `src/api/quranCom.ts` strips them so the text renders in the PDMS font.
+- **Al Quran Cloud** (`https://api.alquran.cloud/v1/juz/{n}/{edition}`) for the full-ayah Urdu
+  translation in the chosen edition, plus the surah list.
 
 ## Project layout
 
 ```
 src/
-  api/        alquran.ts (fetch + types), editions.ts (Urdu editions), queries.ts (react-query hooks)
-  store/      settings.tsx (font size, theme, edition), progress.ts (last read, bookmarks), offline.ts (IndexedDB)
-  pages/      HomePage, SurahPage, SettingsPage
-  components/ AppHeader, AyahCard, GoToAyahDialog, States
-  data/       surahNamesUrdu.ts (Urdu surah names + Urdu digits helper)
+  api/        quranCom.ts (words + Arabic), alquran.ts (translations, surah list), juz.ts (combine per parah),
+              editions.ts (Urdu editions), queries.ts (react-query hooks)
+  store/      settings.tsx (font size, theme, script, edition), progress.ts (last read, bookmarks), offline.ts (IndexedDB)
+  pages/      HomePage (parah / surah tabs), JuzPage (reader), SettingsPage
+  components/ AppHeader, LafziPage (page + ayah blocks), GoToDialog, States
+  data/       juzNames.ts (parah names, surah→parah map), surahNamesUrdu.ts (Urdu surah names, Urdu digits)
   styles/     theme.css (design tokens), global.css
 ```
 

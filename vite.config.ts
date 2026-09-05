@@ -59,6 +59,16 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            urlPattern: /^https:\/\/api\.quran\.com\/api\/v4\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'quran-com-api',
+              networkTimeoutSeconds: 8,
+              expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
     }),

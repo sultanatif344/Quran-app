@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { URDU_EDITIONS } from '../api/editions'
+import type { ArabicScript } from '../api/quranCom'
 import { AppHeader } from '../components/AppHeader'
-import { clearOfflineData, countCachedSurahs } from '../store/offline'
-import { FONT_LABELS_URDU, useSettings } from '../store/settings'
-import type { Theme, TranslationMode } from '../store/settings'
-import type { ArabicScript } from '../api/alquran'
+import { clearOfflineData, countCachedJuz } from '../store/offline'
+import { FONT_LABELS_URDU, MAX_STEP, useSettings } from '../store/settings'
+import type { Theme } from '../store/settings'
 import { toUrduDigits } from '../data/surahNamesUrdu'
 
 const THEMES: { id: Theme; label: string }[] = [
   { id: 'light', label: '☀️ دن' },
   { id: 'dark', label: '🌙 رات' },
   { id: 'system', label: 'خودکار' },
-]
-
-const MODES: { id: TranslationMode; label: string; sub: string }[] = [
-  { id: 'popup', label: 'چھونے پر ترجمہ', sub: 'صفحہ مصحف کی طرح، آیت چھوئیں تو ترجمہ کھلے' },
-  { id: 'inline', label: 'ہر آیت کے نیچے ترجمہ', sub: 'عربی اور اردو الگ الگ خانوں میں' },
 ]
 
 const SCRIPTS: { id: ArabicScript; label: string; sub: string }[] = [
@@ -81,7 +76,7 @@ export function SettingsPage() {
   const [cleared, setCleared] = useState(false)
 
   useEffect(() => {
-    void countCachedSurahs().then(setCached)
+    void countCachedJuz().then(setCached)
   }, [cleared])
 
   const onClear = async () => {
@@ -94,42 +89,45 @@ export function SettingsPage() {
     <>
       <AppHeader title="ترتیبات" backTo="/" />
       <main className="page">
-        <Section id="mode-title" title="ترجمہ دکھانے کا طریقہ">
-          <OptionList
-            labelledBy="mode-title"
-            options={MODES}
-            value={settings.translationMode}
-            onChange={(v) => update({ translationMode: v })}
-          />
-        </Section>
-
         <Section id="font-title" title="حروف کا سائز">
           <div className="stepper">
             <button className="btn" onClick={() => stepFont(-1)} disabled={settings.fontStep === 0} aria-label="چھوٹا کریں">
               <span className="latin">A−</span>
             </button>
             <span className="stepper__value">{FONT_LABELS_URDU[settings.fontStep]}</span>
-            <button className="btn" onClick={() => stepFont(1)} disabled={settings.fontStep === 4} aria-label="بڑا کریں">
+            <button className="btn" onClick={() => stepFont(1)} disabled={settings.fontStep === MAX_STEP} aria-label="بڑا کریں">
               <span className="latin">A+</span>
             </button>
           </div>
           <div className="preview">
-            <p className="mushaf__text" lang="ar" style={{ padding: 0 }}>
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            <p className="lafzi__arabic lafzi__arabic--center" lang="ar" style={{ padding: 0 }}>
+              بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
             </p>
-            <p className="inline-ayah__urdu" lang="ur" style={{ marginTop: 4 }}>
-              شروع الله کا نام لے کر جو بڑا مہربان نہایت رحم والا ہے
+            <div className="lafzi__words" style={{ border: '1px solid var(--rule)' }}>
+              {[
+                ['بِسْمِ', 'نام سے'],
+                ['اللّٰهِ', 'اللہ کے'],
+                ['الرَّحْمٰنِ', 'جو بہت مہربان'],
+                ['الرَّحِيْمِ', 'رحم کرنے والا'],
+              ].map(([a, u]) => (
+                <div className="lafzi__cell" key={a}>
+                  <span className="lafzi__word" lang="ar">
+                    {a}
+                  </span>
+                  <span className="lafzi__meaning" lang="ur">
+                    {u}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="lafzi__tr" lang="ur" style={{ padding: '6px 0 0' }}>
+              اللہ کے نام سے جو بہت مہربان، رحم کرنے والا ہے
             </p>
           </div>
         </Section>
 
         <Section id="script-title" title="عربی رسم الخط">
-          <OptionList
-            labelledBy="script-title"
-            options={SCRIPTS}
-            value={settings.script}
-            onChange={(v) => update({ script: v })}
-          />
+          <OptionList labelledBy="script-title" options={SCRIPTS} value={settings.script} onChange={(v) => update({ script: v })} />
         </Section>
 
         <Section id="theme-title" title="رنگ">
@@ -142,7 +140,10 @@ export function SettingsPage() {
           </div>
         </Section>
 
-        <Section id="edition-title" title="اردو ترجمہ">
+        <Section id="edition-title" title="بامحاورہ اردو ترجمہ">
+          <p className="muted" style={{ margin: '0 0 10px', fontSize: '0.9em' }}>
+            لفظی (لفظ بہ لفظ) معنی ہمیشہ دکھائے جاتے ہیں؛ یہاں ہر آیت کے نیچے والا مکمل ترجمہ چنیں۔
+          </p>
           <OptionList
             labelledBy="edition-title"
             options={URDU_EDITIONS.map((e) => ({
@@ -157,11 +158,11 @@ export function SettingsPage() {
 
         <Section id="offline-title" title="آف لائن ڈیٹا">
           <p className="muted" style={{ marginTop: 0 }}>
-            جو سورتیں آپ ایک بار کھول لیں وہ انٹرنیٹ کے بغیر بھی پڑھی جا سکتی ہیں۔
+            جو پارے آپ ایک بار کھول لیں وہ انٹرنیٹ کے بغیر بھی پڑھے جا سکتے ہیں۔
             {cached !== null && (
               <>
                 <br />
-                محفوظ سورتیں: {toUrduDigits(cached)}
+                محفوظ پارے: {toUrduDigits(cached)}
               </>
             )}
           </p>
@@ -171,7 +172,7 @@ export function SettingsPage() {
         </Section>
 
         <p className="muted" style={{ textAlign: 'center', fontSize: '0.85em' }}>
-          متن اور تراجم: <span className="latin">alquran.cloud</span>
+          متن اور لفظی معنی: <span className="latin">quran.com</span> · تراجم: <span className="latin">alquran.cloud</span>
         </p>
       </main>
     </>

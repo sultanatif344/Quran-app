@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchSurah, fetchSurahList } from './alquran'
-import type { ArabicScript, SurahData, SurahMeta } from './alquran'
-import { cacheSurah, cacheSurahList, getCachedSurah, getCachedSurahList } from '../store/offline'
+import { fetchSurahList } from './alquran'
+import type { SurahMeta } from './alquran'
+import { fetchJuz } from './juz'
+import type { JuzData } from './juz'
+import type { ArabicScript } from './quranCom'
+import { cacheJuz, cacheSurahList, getCachedJuz, getCachedSurahList } from '../store/offline'
 
 /** Network first; fall back to IndexedDB so previously opened content works offline. */
 async function loadSurahList(signal: AbortSignal): Promise<SurahMeta[]> {
@@ -16,18 +19,13 @@ async function loadSurahList(signal: AbortSignal): Promise<SurahMeta[]> {
   }
 }
 
-async function loadSurah(
-  n: number,
-  edition: string,
-  script: ArabicScript,
-  signal: AbortSignal,
-): Promise<SurahData> {
+async function loadJuz(n: number, edition: string, script: ArabicScript, signal: AbortSignal): Promise<JuzData> {
   try {
-    const data = await fetchSurah(n, edition, script, signal)
-    void cacheSurah(data)
+    const data = await fetchJuz(n, edition, script, signal)
+    void cacheJuz(data)
     return data
   } catch (err) {
-    const cached = await getCachedSurah(n, edition, script)
+    const cached = await getCachedJuz(n, edition, script)
     if (cached) return cached
     throw err
   }
@@ -42,11 +40,11 @@ export function useSurahList() {
   })
 }
 
-export function useSurah(n: number, edition: string, script: ArabicScript) {
+export function useJuz(n: number, edition: string, script: ArabicScript) {
   return useQuery({
-    queryKey: ['surah', n, edition, script],
-    queryFn: ({ signal }) => loadSurah(n, edition, script, signal),
-    enabled: Number.isInteger(n) && n >= 1 && n <= 114,
+    queryKey: ['juz', n, edition, script],
+    queryFn: ({ signal }) => loadJuz(n, edition, script, signal),
+    enabled: Number.isInteger(n) && n >= 1 && n <= 30,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 30,
   })

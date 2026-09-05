@@ -1,32 +1,29 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { DEFAULT_EDITION, URDU_EDITIONS } from '../api/editions'
-import type { ArabicScript } from '../api/alquran'
+import type { ArabicScript } from '../api/quranCom'
 
 export type Theme = 'light' | 'dark' | 'system'
-/** popup = tap an ayah to see its translation; inline = translation under every ayah. */
-export type TranslationMode = 'popup' | 'inline'
 
 export interface Settings {
-  /** 0 … 4, index into FONT_SCALES */
+  /** Index into FONT_SCALES */
   fontStep: number
   theme: Theme
   urduEdition: string
   script: ArabicScript
-  translationMode: TranslationMode
 }
 
-export const FONT_SCALES = [0.85, 1, 1.15, 1.3, 1.5]
-export const FONT_LABELS_URDU = ['چھوٹا', 'درمیانہ', 'بڑا', 'بہت بڑا', 'سب سے بڑا']
+export const FONT_SCALES = [0.6, 0.7, 0.85, 1, 1.15, 1.3, 1.5]
+export const FONT_LABELS_URDU = ['بہت چھوٹا', 'چھوٹا', 'ذرا چھوٹا', 'درمیانہ', 'بڑا', 'بہت بڑا', 'سب سے بڑا']
+export const MAX_STEP = FONT_SCALES.length - 1
 
-const STORAGE_KEY = 'quran-settings-v1'
+const STORAGE_KEY = 'quran-settings-v2'
 
 const DEFAULTS: Settings = {
-  fontStep: 2,
+  fontStep: 3,
   theme: 'system',
   urduEdition: DEFAULT_EDITION,
   script: 'simple',
-  translationMode: 'popup',
 }
 
 function load(): Settings {
@@ -35,13 +32,12 @@ function load(): Settings {
     if (!raw) return DEFAULTS
     const parsed = JSON.parse(raw) as Partial<Settings>
     return {
-      fontStep: Math.min(4, Math.max(0, Number(parsed.fontStep ?? DEFAULTS.fontStep))),
+      fontStep: Math.min(MAX_STEP, Math.max(0, Number(parsed.fontStep ?? DEFAULTS.fontStep))),
       theme: parsed.theme ?? DEFAULTS.theme,
       urduEdition: URDU_EDITIONS.some((e) => e.id === parsed.urduEdition)
         ? (parsed.urduEdition as string)
         : DEFAULTS.urduEdition,
       script: parsed.script === 'uthmani' ? 'uthmani' : 'simple',
-      translationMode: parsed.translationMode === 'inline' ? 'inline' : 'popup',
     }
   } catch {
     return DEFAULTS
@@ -67,36 +63,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [settings])
 
-  // Apply font scale + script family
   useEffect(() => {
     document.documentElement.style.setProperty('--font-scale', String(FONT_SCALES[settings.fontStep]))
     document.documentElement.dataset.script = settings.script
   }, [settings.fontStep, settings.script])
 
-  // Apply theme (respecting system preference when 'system')
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
       const dark = settings.theme === 'dark' || (settings.theme === 'system' && mq.matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-      const meta = document.querySelector('meta[name="theme-color"]')
-      meta?.setAttribute('content', dark ? '#17100d' : '#33190f')
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#17100d' : '#33190f')
     }
     apply()
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [settings.theme])
 
-  const update = useCallback((patch: Partial<Settings>) => {
-    setSettings((s) => ({ ...s, ...patch }))
-  }, [])
-
-  const stepFont = useCallback((delta: number) => {
-    setSettings((s) => ({ ...s, fontStep: Math.min(4, Math.max(0, s.fontStep + delta)) }))
-  }, [])
+  const update = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), [])
+  const stepFont = useCallback(
+    (delta: number) => setSettings((s) => ({ ...s, fontStep: Math.min(MAX_STEP, Math.max(0, s.fontStep + delta)) })),
+    [],
+  )
 
   const value = useMemo(() => ({ settings, update, stepFont }), [settings, update, stepFont])
-
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>
 }
 
