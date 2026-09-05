@@ -22,6 +22,8 @@ export interface Line {
   surah: number
   /** True when ayah 1 of a surah begins on this line (show the surah header before it). */
   startsSurah: boolean
+  /** Ruku number when a new ruku begins on this line (printed as a side mark). */
+  rukuStart: number | null
   words: LineWord[]
   /** Ayahs whose final word is on this line — their running translation goes under it. */
   ended: Entry[]
@@ -29,6 +31,7 @@ export interface Line {
 
 export interface JuzPageData {
   page: number
+  manzil: number
   lines: Line[]
   entries: Entry[]
 }
@@ -42,23 +45,27 @@ export interface JuzData {
   pages: JuzPageData[]
 }
 
-function buildLines(entries: Entry[]): Line[] {
+function buildLines(entries: Entry[], prevRuku: number | null): Line[] {
   const lines: Line[] = []
+  let lastRuku = prevRuku
   for (const e of entries) {
     // Surah 1's ayah 1 is the Bismillah; the surah header already shows it.
-    const skip = e.surah === 1 && e.ayah === 1
-    if (skip) {
-      // still mark the surah start on the next line via a synthetic flag
+    if (e.surah === 1 && e.ayah === 1) {
+      lastRuku = e.ruku
       continue
     }
+    const newRuku = e.ruku !== lastRuku
+    lastRuku = e.ruku
     e.words.forEach((w, i) => {
       let last = lines[lines.length - 1]
       if (!last || last.line !== w.line || last.surah !== e.surah) {
-        last = { line: w.line, surah: e.surah, startsSurah: false, words: [], ended: [] }
+        last = { line: w.line, surah: e.surah, startsSurah: false, rukuStart: null, words: [], ended: [] }
         lines.push(last)
       }
-      if (e.ayah === 1 && i === 0) last.startsSurah = true
-      if (e.surah === 1 && e.ayah === 2 && i === 0) last.startsSurah = true
+      if (i === 0) {
+        if (e.ayah === 1 || (e.surah === 1 && e.ayah === 2)) last.startsSurah = true
+        if (newRuku && last.rukuStart === null) last.rukuStart = e.ruku
+      }
       const ayahEnd = i === e.words.length - 1
       last.words.push({ arabic: w.arabic, urdu: w.urdu, surah: e.surah, ayah: e.ayah, ayahEnd })
       if (ayahEnd) last.ended.push(e)
@@ -88,9 +95,14 @@ export async function fetchJuz(
     byPage.set(v.page, list)
   }
 
+  let prevRuku: number | null = null
   const pages: JuzPageData[] = [...byPage.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([page, entries]) => ({ page, entries, lines: buildLines(entries) }))
+    .map(([page, entries]) => {
+      const lines = buildLines(entries, prevRuku)
+      prevRuku = entries[entries.length - 1].ruku
+      return { page, manzil: entries[0].manzil, entries, lines }
+    })
 
   return { juz, urduEdition, script, bismillah, bismillahUrdu, pages }
 }

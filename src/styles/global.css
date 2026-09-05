@@ -562,3 +562,49 @@ dialog.goto::backdrop {
   gap: 8px;
   font-size: calc(var(--ui-size) * 0.95);
 }
+
+/* ---------- Immersive reader: controls hide until the page is tapped ---------- */
+.app-header--overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.app-header--overlay.is-hidden {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+}
+.bottom-bar {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.bottom-bar.is-hidden {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+}
+.page--immersive {
+  padding-top: 8px;
+  padding-bottom: 40px;
+  min-height: 100vh;
+  cursor: default;
+}
+.reader-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 11;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(30, 20, 16, 0.85);
+  color: #fff8ef;
+  font-size: calc(var(--ui-size) * 0.9);
+  pointer-events: none;
+  animation: hint-fade 4s forwards;
+}
+@keyframes hint-fade {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}

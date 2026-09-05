@@ -9,6 +9,9 @@ interface Props {
   backTo?: string
   /** Extra buttons on the trailing side. */
   actions?: ReactNode
+  /** Float over the content and slide away when hidden (reader). */
+  overlay?: boolean
+  hidden?: boolean
 }
 
 function resolveIsDark(theme: string): boolean {
@@ -17,17 +20,20 @@ function resolveIsDark(theme: string): boolean {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
-export function AppHeader({ title, subtitle, backTo, actions }: Props) {
+export function AppHeader({ title, subtitle, backTo, actions, overlay, hidden }: Props) {
   const { settings, update } = useSettings()
   const isDark = resolveIsDark(settings.theme)
 
   const toggleTheme = () => update({ theme: isDark ? 'light' : 'dark' })
 
   return (
-    <header className="app-header">
+    <header
+      className={`app-header${overlay ? ' app-header--overlay' : ''}${hidden ? ' is-hidden' : ''}`}
+      aria-hidden={hidden || undefined}
+    >
       <div className="app-header__inner">
         {backTo && (
-          <Link to={backTo} className="btn btn--header btn--icon" aria-label="واپس">
+          <Link to={backTo} className="btn btn--header btn--icon" aria-label="واپس" tabIndex={hidden ? -1 : 0}>
             <span aria-hidden="true">→</span>
           </Link>
         )}
@@ -41,6 +47,7 @@ export function AppHeader({ title, subtitle, backTo, actions }: Props) {
           className="btn btn--header btn--icon"
           onClick={toggleTheme}
           aria-label={isDark ? 'دن کا موڈ' : 'رات کا موڈ'}
+          tabIndex={hidden ? -1 : 0}
         >
           <span aria-hidden="true">{isDark ? '☀️' : '🌙'}</span>
         </button>

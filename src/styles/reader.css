@@ -1,6 +1,6 @@
 /* ---------- Lafzi (word-by-word) mushaf page reader ---------- */
 .page--reader {
-  padding-top: 10px;
+  padding-top: 18px;
 }
 
 /* PDMS Saleem QuranFont — the Indo-Pak printed mushaf face (Pakistan Data Management
@@ -15,8 +15,9 @@
 
 :root[data-script='simple'] {
   --font-arabic: 'PDMS Saleem QuranFont', 'Scheherazade New', 'Noto Naskh Arabic', serif;
-  --arabic-weight: 400;
-  --arabic-lh: 1.9;
+  /* the print is a heavy lithograph; synthetic bold thickens PDMS to match */
+  --arabic-weight: 700;
+  --arabic-lh: 1.85;
 }
 :root[data-script='uthmani'] {
   --font-arabic: 'Amiri Quran', 'Scheherazade New', 'Noto Naskh Arabic', serif;
@@ -24,76 +25,131 @@
   --arabic-lh: 2;
 }
 
-/* Rule colour for the printed-table look */
+/* Ink and rule colours for the printed-page look */
 :root {
-  --rule: #4a3324;
-  --rule-soft: #8a6e5a;
+  --ink: #1b120c;
+  --rule: #2b1d14;
+  --rule-soft: #6f5646;
+  --paper: #fffdf8;
 }
 :root[data-theme='dark'] {
-  --rule: #c9ad8a;
+  --ink: #f3e9dd;
+  --rule: #d6bb98;
   --rule-soft: #8a7259;
+  --paper: #221712;
 }
 
 .mushaf {
   margin: 0 auto;
 }
 
-.mushaf__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 10px 8px;
-  color: var(--text-muted);
-  font-size: calc(var(--ui-size) * 0.85);
-  font-weight: 600;
-}
-.mushaf__head-title {
-  color: var(--primary);
-  font-size: calc(var(--ui-size) * 1);
-}
-.mushaf__head-juz {
-  font-family: var(--font-arabic);
-  font-weight: 400;
-  margin-inline-start: 4px;
-}
-
-/* Outer double rule, like the printed frame */
+/* ---- Frame: thick outer rule, thin inner rule, boxed tabs riding the rules ---- */
 .mushaf__frame {
-  background: var(--surface);
-  border: 2px solid var(--rule);
-  padding: 4px;
-  box-shadow: var(--shadow-sm);
-  border-radius: 3px;
+  position: relative;
+  background: var(--paper);
+  border: 3px solid var(--rule);
+  padding: 5px;
+  margin-top: 14px;
+  margin-bottom: 14px;
 }
 .mushaf__inner {
   border: 1px solid var(--rule);
+  color: var(--ink);
+}
+.mushaf__tab {
+  position: absolute;
+  top: -15px;
+  padding: 1px 10px;
+  min-width: 34px;
+  text-align: center;
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--rule);
+  color: var(--ink);
+  font-size: calc(var(--ui-size) * 0.8);
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 1;
+}
+.mushaf__tab--right {
+  right: 10px;
+  font-family: var(--font-arabic);
+  font-weight: 400;
+}
+.mushaf__tab--center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mushaf__tab--left {
+  left: 10px;
+}
+.mushaf__tab--bottom {
+  top: auto;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-/* ---- Surah header ---- */
-.lafzi-surah__banner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  padding: 6px 16px 4px;
+/* ---- Surah header: ornamental box with title line + Bismillah calligraphy ---- */
+.lafzi-surah {
+  position: relative;
+  padding: 16px 12px 0;
   border-bottom: 1px solid var(--rule);
-  background:
-    linear-gradient(90deg, transparent, var(--gold-soft) 18%, var(--gold-soft) 82%, transparent);
-  color: var(--primary);
+}
+.lafzi-surah__crest {
+  text-align: center;
+  color: var(--rule);
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: -6px;
+}
+.lafzi-surah__box {
+  margin: 0 auto 8px;
+  max-width: 560px;
+  border: 2px solid var(--rule);
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--rule);
+  padding: 8px 12px 6px;
+  text-align: center;
+}
+.lafzi-surah__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--rule);
+  direction: rtl;
 }
 .lafzi-surah__name {
   font-family: 'Amiri Quran', 'Scheherazade New', serif;
-  font-size: calc(var(--arabic-size) * 0.85);
+  font-size: calc(var(--arabic-size) * 0.8);
   line-height: 1.5;
+  color: var(--ink);
 }
-.lafzi-surah__meta {
-  font-size: calc(var(--ui-size) * 0.75);
-  color: var(--text-muted);
+.lafzi-surah__side {
+  font-size: calc(var(--ui-size) * 0.72);
+  color: var(--rule-soft);
+  min-width: 3em;
+}
+.lafzi-surah__bismillah {
+  margin: 4px 0 0;
+  font-family: var(--font-arabic);
+  font-weight: var(--arabic-weight);
+  font-size: calc(var(--arabic-size) * 1.05);
+  line-height: 1.7;
+  color: var(--ink);
+}
+.lafzi--bismillah {
+  border-bottom: none;
+}
+.lafzi--bismillah .lafzi__words {
+  border-top: 1px solid var(--rule);
 }
 
 /* ---- One printed line: Arabic / word boxes / running translation ---- */
 .lafzi {
+  position: relative;
   border-bottom: 1px solid var(--rule);
 }
 .mushaf__inner > div:last-child > .lafzi:last-child {
@@ -102,20 +158,21 @@
 
 .lafzi__arabic {
   margin: 0;
-  padding: 2px 10px 0;
+  padding: 3px 10px 0;
   direction: rtl;
-  text-align: justify;
-  text-align-last: right;
+  text-align: right;
   font-family: var(--font-arabic);
   font-weight: var(--arabic-weight);
   font-size: var(--arabic-size);
   line-height: var(--arabic-lh);
-  word-spacing: 0.08em;
-  color: var(--text);
+  word-spacing: 0.06em;
+  color: var(--ink);
 }
-.lafzi__arabic--center {
-  text-align: center;
-  text-align-last: center;
+.lafzi__arabic--justify {
+  /* Full printed lines are justified; the last (or only) line stays flush right so
+     short lines never stretch into wide gaps. */
+  text-align: justify;
+  text-align-last: right;
 }
 .lafzi__ayah {
   border-radius: 4px;
@@ -133,17 +190,45 @@
   justify-content: center;
   min-width: 1.2em;
   height: 1.2em;
-  margin: 0 0.3em;
+  margin: 0 0.25em;
   padding: 0 0.15em;
   border-radius: 50%;
-  border: 1.5px solid var(--rule-soft);
-  color: var(--text);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: 0.48em;
+  font-size: 0.46em;
   line-height: 1;
-  vertical-align: 0.3em;
+  vertical-align: 0.35em;
   user-select: none;
+}
+
+/* Ruku mark riding the left rule, like the print's side tabs */
+.lafzi__ruku {
+  position: absolute;
+  left: -19px;
+  top: 6px;
+  width: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--paper);
+  border: 2px solid var(--rule);
+  border-radius: 6px;
+  padding: 2px 0;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--ink);
+  z-index: 1;
+}
+.lafzi__ruku-ain {
+  font-family: var(--font-arabic);
+  font-size: 15px;
+  line-height: 1;
+}
+.lafzi__ruku-num {
+  font-family: var(--font-ui);
+  font-weight: 700;
 }
 
 /* Word boxes: a ruled table that wraps right-to-left */
@@ -175,57 +260,54 @@
   direction: rtl;
   font-family: var(--font-arabic);
   font-weight: var(--arabic-weight);
-  font-size: calc(var(--arabic-size) * 0.7);
-  line-height: 1.8;
+  font-size: calc(var(--arabic-size) * 0.68);
+  line-height: 1.75;
   border-bottom: 1px solid var(--rule-soft);
   white-space: nowrap;
-  color: var(--text);
+  color: var(--ink);
 }
 .lafzi__meaning {
   display: block;
   padding: 0 6px 2px;
   direction: rtl;
   font-family: var(--font-urdu);
-  font-size: calc(var(--urdu-size) * 0.7);
+  font-size: calc(var(--urdu-size) * 0.68);
   line-height: 1.85;
-  color: var(--text);
+  color: var(--ink);
 }
 
-/* Running translation row: ayahs flow together, separated by their number */
+/* Running translation row: ayahs flow together, each closed by a stop mark */
 .lafzi__tr {
   margin: 0;
-  padding: 2px 10px 4px;
+  padding: 2px 10px 3px;
   border-top: 1px solid var(--rule);
   direction: rtl;
   text-align: right;
   font-family: var(--font-urdu);
-  font-size: calc(var(--urdu-size) * 0.88);
+  font-size: calc(var(--urdu-size) * 0.86);
   line-height: 1.95;
-  color: var(--text);
+  color: var(--ink);
 }
 .lafzi__tr-ayah {
   border-radius: 4px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
-.lafzi__tr-num {
-  font-family: var(--font-ui);
-  font-size: 0.7em;
-  color: var(--text-muted);
-  margin: 0 0.3em;
+.lafzi__tr-stop {
+  margin-inline-start: 0.15em;
 }
 .lafzi__bookmark {
   display: inline-grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  margin: 0 0.1em;
+  width: 26px;
+  height: 26px;
+  margin: 0 0.15em;
   vertical-align: middle;
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--text-muted);
-  opacity: 0.5;
+  color: var(--rule-soft);
+  opacity: 0.6;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -236,11 +318,6 @@
 .lafzi__bookmark:hover,
 .lafzi__bookmark:focus-visible {
   opacity: 1;
-}
-
-/* Bismillah block inside a surah header */
-.lafzi--bismillah .lafzi__arabic {
-  padding-top: 4px;
 }
 
 @media (min-width: 560px) {

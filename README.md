@@ -13,6 +13,10 @@ Arabic (Uthmani script) and an Urdu translation directly beneath it.
   the reader shows one printed mushaf page at a time with parah, surah, and page number in the
   header. A surah list (with search) is one tap away and opens the parah where that surah begins
 - Surah headers with a Bismillah row (with its own word boxes and translation) at every surah start
+- Printed-page details: boxed tabs on the frame for parah, page number, surah, and manzil; ruku
+  marks on the side rule; rub-el-hizb stars; heavy lithograph-style type
+- Distraction-free reading: the header and controls stay hidden until the page is tapped, then
+  slide away again after a few seconds. A full-screen button is offered where the browser supports it
 - Two Arabic scripts: Indo-Pak style in the PDMS Saleem QuranFont (default) or Uthmani in Amiri Quran.
   The PDMS font (Pakistan Data Management Services, 2007) is free for personal, non-commercial use
   and is self-hosted from `public/fonts/`.

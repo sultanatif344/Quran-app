@@ -12,6 +12,8 @@ interface Props {
   surahs: Map<number, SurahMeta>
   bookmarked: Set<string>
   highlighted: string | null
+  /** Show bookmark toggles (only while the controls are visible). */
+  showTools: boolean
   onToggleBookmark: (surah: number, ayah: number) => void
 }
 
@@ -51,14 +53,15 @@ function LafziLine({
   line,
   bookmarked,
   highlighted,
+  showTools,
   onToggleBookmark,
 }: {
   line: Line
   bookmarked: Set<string>
   highlighted: string | null
+  showTools: boolean
   onToggleBookmark: (surah: number, ayah: number) => void
 }) {
-  // Group consecutive words by ayah so each ayah can be highlighted as one span.
   const groups: { key: string; ayah: number; words: typeof line.words }[] = []
   for (const w of line.words) {
     const key = `${w.surah}:${w.ayah}`
@@ -66,10 +69,18 @@ function LafziLine({
     if (last && last.key === key) last.words.push(w)
     else groups.push({ key, ayah: w.ayah, words: [w] })
   }
+  // Full printed lines are stretched edge to edge; short tail lines are not.
+  const justify = line.words.length >= 5
 
   return (
     <div className="lafzi">
-      <p className="lafzi__arabic" lang="ar">
+      {line.rukuStart !== null && (
+        <span className="lafzi__ruku" lang="ar" aria-label={`رکوع ${toUrduDigits(line.rukuStart)}`}>
+          <span className="lafzi__ruku-ain">ع</span>
+          <span className="lafzi__ruku-num">{toUrduDigits(line.rukuStart)}</span>
+        </span>
+      )}
+      <p className={`lafzi__arabic${justify ? ' lafzi__arabic--justify' : ''}`} lang="ar">
         {groups.map((g) => (
           <span
             key={g.key}
@@ -103,18 +114,22 @@ function LafziLine({
             return (
               <span key={key} className={`lafzi__tr-ayah${highlighted === key ? ' is-highlighted' : ''}`}>
                 {e.urdu}
-                <span className="lafzi__tr-num" aria-hidden="true">
-                  ({toUrduDigits(e.ayah)})
+                <span className="lafzi__tr-stop" aria-hidden="true">
+                  ۔
                 </span>
-                <button
-                  type="button"
-                  className="lafzi__bookmark"
-                  aria-pressed={isBookmarked}
-                  aria-label={isBookmarked ? `آیت ${toUrduDigits(e.ayah)} کی نشانی ہٹائیں` : `آیت ${toUrduDigits(e.ayah)} پر نشانی لگائیں`}
-                  onClick={() => onToggleBookmark(e.surah, e.ayah)}
-                >
-                  <BookmarkIcon filled={isBookmarked} />
-                </button>{' '}
+                {(showTools || isBookmarked) && (
+                  <button
+                    type="button"
+                    className="lafzi__bookmark"
+                    aria-pressed={isBookmarked}
+                    aria-label={
+                      isBookmarked ? `آیت ${toUrduDigits(e.ayah)} کی نشانی ہٹائیں` : `آیت ${toUrduDigits(e.ayah)} پر نشانی لگائیں`
+                    }
+                    onClick={() => onToggleBookmark(e.surah, e.ayah)}
+                  >
+                    <BookmarkIcon filled={isBookmarked} />
+                  </button>
+                )}{' '}
               </span>
             )
           })}
@@ -137,22 +152,29 @@ function SurahHeader({
 }) {
   return (
     <header className="lafzi-surah">
-      <div className="lafzi-surah__banner" lang="ar">
-        <span className="lafzi-surah__name">{meta?.name ?? `سورة ${surahNameUrdu(number)}`}</span>
-        {meta && (
-          <span className="lafzi-surah__meta">
-            {meta.revelationType === 'Meccan' ? 'مکیۃ' : 'مدنیۃ'} · {toUrduDigits(meta.numberOfAyahs)} آیات
-          </span>
+      <div className="lafzi-surah__crest" aria-hidden="true">
+        ❁
+      </div>
+      <div className="lafzi-surah__box">
+        <div className="lafzi-surah__title" lang="ar">
+          <span className="lafzi-surah__side">{meta ? toUrduDigits(meta.numberOfAyahs) + ' آیات' : ''}</span>
+          <span className="lafzi-surah__name">{meta?.name ?? `سورة ${surahNameUrdu(number)}`}</span>
+          <span className="lafzi-surah__side">{meta ? (meta.revelationType === 'Meccan' ? 'مکیۃ' : 'مدنیۃ') : ''}</span>
+        </div>
+        {number !== 9 && (
+          <p className="lafzi-surah__bismillah" lang="ar">
+            {bismillah.arabic}
+          </p>
         )}
       </div>
       {number !== 9 && (
         <div className="lafzi lafzi--bismillah">
-          <p className="lafzi__arabic lafzi__arabic--center" lang="ar">
-            {bismillah.arabic}
-          </p>
           <WordBoxes words={bismillah.words} />
           <p className="lafzi__tr" lang="ur">
             {bismillahUrdu}
+            <span className="lafzi__tr-stop" aria-hidden="true">
+              ۔
+            </span>
           </p>
         </div>
       )}
@@ -160,22 +182,31 @@ function SurahHeader({
   )
 }
 
-export function LafziPage({ juz, page, bismillah, bismillahUrdu, surahs, bookmarked, highlighted, onToggleBookmark }: Props) {
+export function LafziPage({
+  juz,
+  page,
+  bismillah,
+  bismillahUrdu,
+  surahs,
+  bookmarked,
+  highlighted,
+  showTools,
+  onToggleBookmark,
+}: Props) {
   const firstSurah = page.entries[0]?.surah
   return (
     <section className="mushaf" aria-label={`صفحہ ${toUrduDigits(page.page)}`}>
-      <header className="mushaf__head">
-        <span>
-          پارہ {toUrduDigits(juz)}{' '}
-          <span className="mushaf__head-juz" lang="ar">
-            {juzName(juz)}
-          </span>
+      <div className="mushaf__frame">
+        {/* Boxed tabs riding the top and bottom rules, like the print */}
+        <span className="mushaf__tab mushaf__tab--right" lang="ar">
+          {juzName(juz)} {toUrduDigits(juz)}
         </span>
-        <span className="mushaf__head-title">سورۃ {surahNameUrdu(firstSurah)}</span>
-        <span>صفحہ {toUrduDigits(page.page)}</span>
-      </header>
+        <span className="mushaf__tab mushaf__tab--center">{toUrduDigits(page.page)}</span>
+        <span className="mushaf__tab mushaf__tab--left">
+          {surahNameUrdu(firstSurah)} {toUrduDigits(firstSurah)}
+        </span>
+        <span className="mushaf__tab mushaf__tab--bottom">منزل {toUrduDigits(page.manzil)}</span>
 
-      <div className="mushaf__frame mushaf__frame--lafzi">
         <div className="mushaf__inner">
           {page.lines.map((line) => (
             <div key={`${line.surah}-${line.line}`}>
@@ -187,7 +218,13 @@ export function LafziPage({ juz, page, bismillah, bismillahUrdu, surahs, bookmar
                   bismillahUrdu={bismillahUrdu}
                 />
               )}
-              <LafziLine line={line} bookmarked={bookmarked} highlighted={highlighted} onToggleBookmark={onToggleBookmark} />
+              <LafziLine
+                line={line}
+                bookmarked={bookmarked}
+                highlighted={highlighted}
+                showTools={showTools}
+                onToggleBookmark={onToggleBookmark}
+              />
             </div>
           ))}
         </div>

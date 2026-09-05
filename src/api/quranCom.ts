@@ -25,6 +25,9 @@ export interface VerseWords {
   arabic: string
   words: Word[]
   sajda: boolean
+  /** Manzil (1–7) and ruku numbers, for the printed side/bottom tabs. */
+  manzil: number
+  ruku: number
 }
 
 interface ApiWord {
@@ -40,6 +43,8 @@ interface ApiVerse {
   page_number: number
   juz_number: number
   sajdah_number: number | null
+  manzil_number: number
+  ruku_number: number
   text_indopak?: string
   text_uthmani?: string
   words: ApiWord[]
@@ -76,6 +81,8 @@ function mapVerse(v: ApiVerse, script: ArabicScript): VerseWords {
     juz: v.juz_number,
     arabic: cleanArabic(v[field] ?? ''),
     sajda: v.sajdah_number != null,
+    manzil: v.manzil_number,
+    ruku: v.ruku_number,
     words: v.words
       .filter((w) => w.char_type_name === 'word')
       .map((w) => ({
