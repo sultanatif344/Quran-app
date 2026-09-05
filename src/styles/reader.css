@@ -5,9 +5,10 @@
 
 /* Arabic face follows the script setting: bold Naskh for Indo-Pak style, Amiri for Uthmani. */
 :root[data-script='simple'] {
-  --font-arabic: 'Noto Naskh Arabic', 'Scheherazade New', serif;
-  --arabic-weight: 600;
-  --arabic-lh: 2.05;
+  /* Scheherazade New Bold is the closest open font to the Indo-Pak printed mushaf. */
+  --font-arabic: 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --arabic-weight: 700;
+  --arabic-lh: 1.95;
 }
 :root[data-script='uthmani'] {
   --font-arabic: 'Amiri Quran', 'Scheherazade New', 'Noto Naskh Arabic', serif;
@@ -93,8 +94,9 @@
   font-weight: var(--arabic-weight);
   font-size: var(--arabic-size);
   line-height: var(--arabic-lh);
-  word-spacing: 0.06em;
+  word-spacing: 0.1em;
   color: var(--text);
+  font-feature-settings: 'kern', 'liga', 'calt';
 }
 
 .mushaf__ayah {
