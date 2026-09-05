@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Reference photos of the printed book (copyrighted scans) stay local
+*.jpeg
+*.jpg

@@ -103,31 +103,39 @@ async function getPage(juz: number, page: number, signal?: AbortSignal): Promise
   return (await res.json()) as ApiPage
 }
 
-/** All verses of a parah with word-by-word Urdu, in mushaf order. */
+/**
+ * All verses of a parah with word-by-word Urdu, in mushaf order.
+ * The first page tells us how many there are; the rest are fetched in parallel.
+ */
 export async function fetchJuzWords(
   juz: number,
   script: ArabicScript,
   signal?: AbortSignal,
 ): Promise<VerseWords[]> {
-  const out: VerseWords[] = []
-  let page = 1
-  for (;;) {
-    const data = await getPage(juz, page, signal)
-    out.push(...data.verses.map((v) => mapVerse(v, script)))
-    if (!data.pagination.next_page) break
-    page = data.pagination.next_page
-  }
-  return out
+  const first = await getPage(juz, 1, signal)
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(0, first.pagination.total_pages - 1) }, (_, i) => getPage(juz, i + 2, signal)),
+  )
+  return [first, ...rest].flatMap((p) => p.verses.map((v) => mapVerse(v, script)))
 }
 
-/** Word-by-word of 1:1 — reused as the Bismillah row at the start of every surah. */
-export async function fetchBismillahWords(script: ArabicScript, signal?: AbortSignal): Promise<VerseWords> {
+const bismillahCache = new Map<ArabicScript, Promise<VerseWords>>()
+
+/** Word-by-word of 1:1 — reused as the Bismillah row at the start of every surah. Fetched once per script. */
+export function fetchBismillahWords(script: ArabicScript, signal?: AbortSignal): Promise<VerseWords> {
+  const cached = bismillahCache.get(script)
+  if (cached) return cached
   const field = script === 'uthmani' ? 'text_uthmani' : 'text_indopak'
-  const res = await fetch(
-    `${BASE}/verses/by_key/1:1?language=ur&words=true&word_fields=${field}&fields=${field}`,
-    { signal },
-  )
-  if (!res.ok) throw new Error(`Quran.com HTTP ${res.status} (1:1)`)
-  const { verse } = (await res.json()) as { verse: ApiVerse }
-  return mapVerse(verse, script)
+  const p = fetch(`${BASE}/verses/by_key/1:1?language=ur&words=true&word_fields=${field}&fields=${field}`, { signal })
+    .then(async (res) => {
+      if (!res.ok) throw new Error(`Quran.com HTTP ${res.status} (1:1)`)
+      const { verse } = (await res.json()) as { verse: ApiVerse }
+      return mapVerse(verse, script)
+    })
+    .catch((err) => {
+      bismillahCache.delete(script) // let the next caller retry
+      throw err
+    })
+  bismillahCache.set(script, p)
+  return p
 }

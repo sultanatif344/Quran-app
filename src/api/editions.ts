@@ -22,7 +22,3 @@ export const URDU_EDITIONS: UrduEdition[] = [
 ]
 
 export const DEFAULT_EDITION = 'ur.jalandhry'
-
-export function editionById(id: string): UrduEdition {
-  return URDU_EDITIONS.find((e) => e.id === id) ?? URDU_EDITIONS[0]
-}

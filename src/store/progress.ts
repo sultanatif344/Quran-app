@@ -18,25 +18,31 @@ interface ProgressState {
 
 const KEY = 'quran-progress-v2'
 
+const inRange = (v: unknown, max: number): v is number => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= max
+
+/** Accept only well-formed positions from storage; anything else is dropped. */
+function asPosition(x: unknown): Position | null {
+  if (!x || typeof x !== 'object') return null
+  const o = x as Record<string, unknown>
+  if (!inRange(o.surah, 114) || !inRange(o.ayah, 286)) return null
+  const juz = inRange(o.juz, 30) ? o.juz : SURAH_START_JUZ[o.surah - 1]
+  return { juz, surah: o.surah, ayah: o.ayah }
+}
+
 function load(): ProgressState {
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = localStorage.getItem(KEY) ?? localStorage.getItem('quran-progress-v1')
     if (raw) {
-      const p = JSON.parse(raw) as Partial<ProgressState>
-      return { lastRead: p.lastRead ?? null, bookmarks: p.bookmarks ?? [] }
-    }
-    // Migrate v1 (surah/ayah only) by assuming the surah's starting parah.
-    const old = localStorage.getItem('quran-progress-v1')
-    if (old) {
-      const p = JSON.parse(old) as { lastRead?: { surah: number; ayah: number; at: number } | null; bookmarks?: { surah: number; ayah: number }[] }
-      const withJuz = <T extends { surah: number }>(x: T) => ({ ...x, juz: SURAH_START_JUZ[x.surah - 1] ?? 1 })
+      const p = JSON.parse(raw) as { lastRead?: unknown; bookmarks?: unknown }
+      const last = asPosition(p.lastRead)
+      const at = (p.lastRead as { at?: unknown } | null)?.at
       return {
-        lastRead: p.lastRead ? withJuz(p.lastRead) : null,
-        bookmarks: (p.bookmarks ?? []).map(withJuz),
+        lastRead: last ? { ...last, at: typeof at === 'number' ? at : Date.now() } : null,
+        bookmarks: Array.isArray(p.bookmarks) ? p.bookmarks.map(asPosition).filter((b): b is Position => b !== null) : [],
       }
     }
   } catch {
-    /* ignore */
+    /* corrupt storage — start fresh */
   }
   return { lastRead: null, bookmarks: [] }
 }
@@ -70,12 +76,8 @@ export function setLastRead(pos: Position) {
   commit({ ...state, lastRead: { ...pos, at: Date.now() } })
 }
 
-export function isBookmarked(pos: Position): boolean {
-  return state.bookmarks.some((b) => same(b, pos))
-}
-
 export function toggleBookmark(pos: Position) {
-  const bookmarks = isBookmarked(pos)
+  const bookmarks = state.bookmarks.some((b) => same(b, pos))
     ? state.bookmarks.filter((b) => !same(b, pos))
     : [...state.bookmarks, pos].sort((a, b) => a.surah - b.surah || a.ayah - b.ayah)
   commit({ ...state, bookmarks })

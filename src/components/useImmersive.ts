@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const AUTO_HIDE_MS = 4000
 
@@ -8,47 +8,44 @@ const AUTO_HIDE_MS = 4000
  */
 export function useImmersive() {
   const [visible, setVisible] = useState(false)
+  const visibleRef = useRef(false)
   const timer = useRef<number | null>(null)
 
-  const clear = () => {
-    if (timer.current) window.clearTimeout(timer.current)
+  const clear = useCallback(() => {
+    if (timer.current !== null) window.clearTimeout(timer.current)
     timer.current = null
-  }
-
-  const hide = useCallback(() => {
-    clear()
-    setVisible(false)
   }, [])
 
-  const show = useCallback(() => {
-    clear()
-    setVisible(true)
-    timer.current = window.setTimeout(() => setVisible(false), AUTO_HIDE_MS)
-  }, [])
-
-  const toggle = useCallback(() => {
-    setVisible((v) => {
+  const set = useCallback(
+    (next: boolean) => {
       clear()
-      if (v) return false
-      timer.current = window.setTimeout(() => setVisible(false), AUTO_HIDE_MS)
-      return true
-    })
-  }, [])
+      visibleRef.current = next
+      setVisible(next)
+      if (next) {
+        timer.current = window.setTimeout(() => {
+          visibleRef.current = false
+          setVisible(false)
+          timer.current = null
+        }, AUTO_HIDE_MS)
+      }
+    },
+    [clear],
+  )
 
-  /** Keep the controls up while the reader is using them. */
+  const toggle = useCallback(() => set(!visibleRef.current), [set])
+
+  /** Restart the auto-hide countdown while the reader is using the controls. */
   const keepAlive = useCallback(() => {
-    if (!timer.current) return
-    clear()
-    timer.current = window.setTimeout(() => setVisible(false), AUTO_HIDE_MS)
-  }, [])
+    if (visibleRef.current) set(true)
+  }, [set])
 
-  useEffect(() => () => clear(), [])
+  useEffect(() => clear, [clear])
 
-  return { visible, show, hide, toggle, keepAlive }
+  return useMemo(() => ({ visible, toggle, keepAlive }), [visible, toggle, keepAlive])
 }
 
 export function isFullscreenSupported(): boolean {
-  return typeof document !== 'undefined' && !!document.documentElement.requestFullscreen
+  return typeof document !== 'undefined' && typeof document.documentElement.requestFullscreen === 'function'
 }
 
 export async function toggleFullscreen(): Promise<void> {

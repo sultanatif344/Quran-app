@@ -11,7 +11,8 @@ import { isFullscreenSupported, toggleFullscreen, useImmersive } from '../compon
 import { juzName } from '../data/juzNames'
 import { toUrduDigits } from '../data/surahNamesUrdu'
 import { setLastRead, toggleBookmark, useProgress } from '../store/progress'
-import { MAX_STEP, useSettings } from '../store/settings'
+import { useSettings } from '../store/settings'
+import { MAX_STEP } from '../data/fontScale'
 
 const HINT_KEY = 'quran-reader-hint-shown'
 

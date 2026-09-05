@@ -42,16 +42,13 @@ function render(size) {
   const cx2 = size * 0.61
   const cy2 = size * 0.45
   const rInner = size * 0.27
-  const corner = size * 0.2
   for (let y = 0; y < size; y++) {
     raw[y * (size * 3 + 1)] = 0 // filter: none
     for (let x = 0; x < size; x++) {
-      // rounded-corner mask (transparent corners are avoided for maskable icons; keep bg square)
       let px = BG
       const inOuter = (x - cx) ** 2 + (y - cy) ** 2 <= rOuter ** 2
       const inInner = (x - cx2) ** 2 + (y - cy2) ** 2 <= rInner ** 2
       if (inOuter && !inInner) px = GOLD
-      void corner
       const o = y * (size * 3 + 1) + 1 + x * 3
       raw[o] = px[0]
       raw[o + 1] = px[1]

@@ -59,8 +59,18 @@ export async function fetchJuzTranslation(
   return out
 }
 
-/** Urdu translation of 1:1 (the Bismillah) in the chosen edition. */
-export async function fetchBismillahTranslation(urduEdition: string, signal?: AbortSignal): Promise<string> {
-  const data = await getJson<{ text: string }>(`/ayah/1:1/${urduEdition}`, signal)
-  return data.text.trim()
+const bismillahCache = new Map<string, Promise<string>>()
+
+/** Urdu translation of 1:1 (the Bismillah) in the chosen edition. Fetched once per edition. */
+export function fetchBismillahTranslation(urduEdition: string, signal?: AbortSignal): Promise<string> {
+  const cached = bismillahCache.get(urduEdition)
+  if (cached) return cached
+  const p = getJson<{ text: string }>(`/ayah/1:1/${urduEdition}`, signal)
+    .then((d) => d.text.trim())
+    .catch((err) => {
+      bismillahCache.delete(urduEdition)
+      throw err
+    })
+  bismillahCache.set(urduEdition, p)
+  return p
 }
