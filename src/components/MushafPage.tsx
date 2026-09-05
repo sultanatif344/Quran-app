@@ -51,9 +51,35 @@ export function MushafPage({
           </p>
         )}
 
+        {/* Al-Fatiha: the Bismillah is ayah 1 itself, so show it as the centred top line. */}
+        {isFirstPage && meta.number === 1 && page.ayahs[0] && (
+          <p
+            className={`mushaf__bismillah mushaf__ayah mushaf__ayah--line${
+              selectedAyah === 1 ? ' is-selected' : ''
+            }${bookmarked.has(1) ? ' is-bookmarked' : ''}`}
+            lang="ar"
+            role="button"
+            tabIndex={0}
+            data-ayah={1}
+            aria-label="آیت ۱، ترجمہ دیکھیں"
+            onClick={() => onSelectAyah(1)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onSelectAyah(1)
+              }
+            }}
+          >
+            {page.ayahs[0].arabic}
+            <span className="mushaf__marker" aria-hidden="true">
+              {toUrduDigits(1)}
+            </span>
+          </p>
+        )}
+
         {mode === 'popup' ? (
           <p className="mushaf__text" lang="ar">
-            {page.ayahs.map((a) => (
+            {page.ayahs.filter((a) => !(isFirstPage && meta.number === 1 && a.numberInSurah === 1)).map((a) => (
               <span
                 key={a.number}
                 role="button"
@@ -80,7 +106,7 @@ export function MushafPage({
           </p>
         ) : (
           <div className="inline-list">
-            {page.ayahs.map((a) => (
+            {page.ayahs.filter((a) => !(isFirstPage && meta.number === 1 && a.numberInSurah === 1)).map((a) => (
               <article
                 key={a.number}
                 id={`ayah-${a.numberInSurah}`}

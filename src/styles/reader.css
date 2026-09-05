@@ -95,6 +95,11 @@
   margin: 0 0 8px;
 }
 
+.mushaf__ayah--line {
+  display: block;
+  padding: 2px 8px;
+}
+
 .mushaf__text {
   margin: 0;
   direction: rtl;
