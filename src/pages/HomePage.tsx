@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSurahList } from '../api/queries'
 import { AppHeader } from '../components/AppHeader'
+import { InstallHelp } from '../components/InstallHelp'
 import { ErrorState, LoadingState } from '../components/States'
 import { JUZ_NAMES, SURAH_START_JUZ } from '../data/juzNames'
 import { surahNameUrdu, toUrduDigits } from '../data/surahNamesUrdu'
@@ -89,6 +90,8 @@ export function HomePage() {
             </div>
           </>
         )}
+
+        <InstallHelp />
 
         <div className="segmented" role="tablist" aria-label="فہرست" style={{ marginTop: 16 }}>
           <button role="tab" className="btn" aria-selected={tab === 'juz'} aria-pressed={tab === 'juz'} onClick={() => switchTab('juz')}>
