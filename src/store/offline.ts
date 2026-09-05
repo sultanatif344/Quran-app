@@ -1,8 +1,8 @@
 import { get, set, del, keys } from 'idb-keyval'
-import type { SurahData, SurahMeta } from '../api/alquran'
+import type { ArabicScript, SurahData, SurahMeta } from '../api/alquran'
 
 const LIST_KEY = 'surah-list'
-const surahKey = (n: number, edition: string) => `surah:${n}:${edition}`
+const surahKey = (n: number, edition: string, script: ArabicScript) => `surah:${n}:${edition}:${script}`
 
 export async function cacheSurahList(list: SurahMeta[]) {
   try {
@@ -22,15 +22,19 @@ export async function getCachedSurahList(): Promise<SurahMeta[] | undefined> {
 
 export async function cacheSurah(data: SurahData) {
   try {
-    await set(surahKey(data.meta.number, data.urduEdition), data)
+    await set(surahKey(data.meta.number, data.urduEdition, data.script), data)
   } catch {
     /* ignore */
   }
 }
 
-export async function getCachedSurah(n: number, edition: string): Promise<SurahData | undefined> {
+export async function getCachedSurah(
+  n: number,
+  edition: string,
+  script: ArabicScript,
+): Promise<SurahData | undefined> {
   try {
-    return await get<SurahData>(surahKey(n, edition))
+    return await get<SurahData>(surahKey(n, edition, script))
   } catch {
     return undefined
   }

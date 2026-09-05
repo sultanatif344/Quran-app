@@ -7,7 +7,13 @@
  */
 
 const BASE = 'https://api.alquran.cloud/v1'
-const ARABIC_EDITION = 'quran-uthmani'
+
+/** Arabic text editions. 'simple' is the standard orthography familiar from Indo-Pak prints. */
+export type ArabicScript = 'simple' | 'uthmani'
+export const ARABIC_EDITIONS: Record<ArabicScript, string> = {
+  simple: 'quran-simple',
+  uthmani: 'quran-uthmani',
+}
 
 export interface SurahMeta {
   number: number
@@ -34,6 +40,7 @@ export interface Ayah {
 export interface SurahData {
   meta: SurahMeta
   urduEdition: string
+  script: ArabicScript
   /** True when Bismillah should be shown as a header above ayah 1. */
   hasBismillah: boolean
   ayahs: Ayah[]
@@ -110,13 +117,15 @@ export function stripBismillah(text: string): string {
 export async function fetchSurah(
   number: number,
   urduEdition: string,
+  script: ArabicScript = 'simple',
   signal?: AbortSignal,
 ): Promise<SurahData> {
+  const arabicEdition = ARABIC_EDITIONS[script]
   const editions = await getJson<ApiSurah[]>(
-    `/surah/${number}/editions/${ARABIC_EDITION},${urduEdition}`,
+    `/surah/${number}/editions/${arabicEdition},${urduEdition}`,
     signal,
   )
-  const arabic = editions.find((e) => e.edition.identifier === ARABIC_EDITION)
+  const arabic = editions.find((e) => e.edition.identifier === arabicEdition)
   const urdu = editions.find((e) => e.edition.identifier === urduEdition)
   if (!arabic || !urdu) throw new Error('Unexpected API response shape')
 
@@ -147,9 +156,28 @@ export async function fetchSurah(
       revelationType: arabic.revelationType,
     },
     urduEdition,
+    script,
     hasBismillah,
     ayahs,
   }
+}
+
+export interface MushafPage {
+  /** Madani mushaf page number (1–604). */
+  page: number
+  juz: number
+  ayahs: Ayah[]
+}
+
+/** Split a surah's ayahs into the printed mushaf pages they fall on. */
+export function groupByPage(ayahs: Ayah[]): MushafPage[] {
+  const pages: MushafPage[] = []
+  for (const a of ayahs) {
+    const last = pages[pages.length - 1]
+    if (last && last.page === a.page) last.ayahs.push(a)
+    else pages.push({ page: a.page, juz: a.juz, ayahs: [a] })
+  }
+  return pages
 }
 
 export const BISMILLAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'

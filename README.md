@@ -5,7 +5,12 @@ Arabic (Uthmani script) and an Urdu translation directly beneath it.
 
 ## Features
 
-- Ayah-by-ayah Arabic + Urdu (Nastaliq script), with adjustable text size (A− / A+)
+- Mushaf-style pages: continuous justified Arabic in a framed page with ayah-end markers,
+  one printed page (Madani mushaf numbering) at a time, with para and page number in the header
+- Translation on tap: touch any ayah to open a bottom sheet with its Urdu (Nastaliq), or switch
+  to "translation below each ayah" in Settings
+- Two Arabic scripts: Indo-Pak style simple orthography in bold Naskh (default) or Uthmani
+- Adjustable text size (A− / A+)
 - Chestnut-brown day theme and a warm night theme
 - Surah list with search by number, Arabic, English or Urdu name
 - "Continue reading" card that remembers the last ayah you were looking at

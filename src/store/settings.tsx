@@ -1,14 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { DEFAULT_EDITION, URDU_EDITIONS } from '../api/editions'
+import type { ArabicScript } from '../api/alquran'
 
 export type Theme = 'light' | 'dark' | 'system'
+/** popup = tap an ayah to see its translation; inline = translation under every ayah. */
+export type TranslationMode = 'popup' | 'inline'
 
 export interface Settings {
   /** 0 … 4, index into FONT_SCALES */
   fontStep: number
   theme: Theme
   urduEdition: string
+  script: ArabicScript
+  translationMode: TranslationMode
 }
 
 export const FONT_SCALES = [0.85, 1, 1.15, 1.3, 1.5]
@@ -20,6 +25,8 @@ const DEFAULTS: Settings = {
   fontStep: 2,
   theme: 'system',
   urduEdition: DEFAULT_EDITION,
+  script: 'simple',
+  translationMode: 'popup',
 }
 
 function load(): Settings {
@@ -33,6 +40,8 @@ function load(): Settings {
       urduEdition: URDU_EDITIONS.some((e) => e.id === parsed.urduEdition)
         ? (parsed.urduEdition as string)
         : DEFAULTS.urduEdition,
+      script: parsed.script === 'uthmani' ? 'uthmani' : 'simple',
+      translationMode: parsed.translationMode === 'inline' ? 'inline' : 'popup',
     }
   } catch {
     return DEFAULTS
@@ -58,10 +67,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [settings])
 
-  // Apply font scale
+  // Apply font scale + script family
   useEffect(() => {
     document.documentElement.style.setProperty('--font-scale', String(FONT_SCALES[settings.fontStep]))
-  }, [settings.fontStep])
+    document.documentElement.dataset.script = settings.script
+  }, [settings.fontStep, settings.script])
 
   // Apply theme (respecting system preference when 'system')
   useEffect(() => {
@@ -70,7 +80,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const dark = settings.theme === 'dark' || (settings.theme === 'system' && mq.matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
       const meta = document.querySelector('meta[name="theme-color"]')
-      meta?.setAttribute('content', dark ? '#1e1410' : '#5c2e1b')
+      meta?.setAttribute('content', dark ? '#17100d' : '#33190f')
     }
     apply()
     mq.addEventListener('change', apply)
