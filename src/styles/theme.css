@@ -1,0 +1,57 @@
+/* ---------- Chestnut design tokens ---------- */
+:root {
+  color-scheme: light;
+
+  --chestnut-900: #3b1f14;
+  --chestnut-700: #5c2e1b;
+  --chestnut-500: #8b4a2b;
+  --chestnut-300: #b8825f;
+  --chestnut-100: #ead9c8;
+  --gold: #b98a3c;
+  --gold-soft: #f1e4c7;
+
+  --bg: #fbf6ee;
+  --surface: #fffdf9;
+  --surface-2: #f4ebdf;
+  --border: #dcc9b4;
+  --text: #2a1a12;
+  --text-muted: #6b5646;
+  --primary: var(--chestnut-700);
+  --primary-strong: var(--chestnut-900);
+  --on-primary: #fff8ef;
+  --focus: #d08a3e;
+  --danger: #8f2f2f;
+
+  --shadow: 0 2px 8px rgba(59, 31, 20, 0.12);
+  --radius: 18px;
+  --radius-sm: 12px;
+
+  /* Sizing — font scale is set by the settings store (0.85 … 1.5) */
+  --font-scale: 1;
+  --ui-size: calc(18px * var(--font-scale));
+  --arabic-size: calc(34px * var(--font-scale));
+  --urdu-size: calc(24px * var(--font-scale));
+  --touch: 56px;
+
+  --font-ui: 'Noto Naskh Arabic', 'Segoe UI', Roboto, system-ui, sans-serif;
+  --font-arabic: 'Amiri Quran', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --font-urdu: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Noto Naskh Arabic', serif;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1e1410;
+  --surface: #2a1b15;
+  --surface-2: #34231b;
+  --border: #4d3628;
+  --text: #f3e9dd;
+  --text-muted: #c9b39f;
+  --primary: #c98a5e;
+  --primary-strong: #e0a978;
+  --on-primary: #1e1410;
+  --gold: #d9b060;
+  --gold-soft: #3c2c1a;
+  --focus: #f0b266;
+  --danger: #e08585;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
