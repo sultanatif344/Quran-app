@@ -51,7 +51,7 @@ export function HomePage() {
             onClick={() => navigate(`/surah/${lastRead.surah}?ayah=${lastRead.ayah}`)}
           >
             <span className="continue-card__arrow" aria-hidden="true">
-              ▶
+              ◀
             </span>
             <span style={{ flex: 1 }}>
               <span className="continue-card__label">جہاں چھوڑا تھا وہاں سے جاری رکھیں</span>
@@ -108,8 +108,7 @@ export function HomePage() {
                     <span className="surah-row__urdu">سورۃ {surahNameUrdu(s.number)}</span>
                     <br />
                     <span className="surah-row__meta">
-                      {toUrduDigits(s.numberOfAyahs)} آیات · {s.revelationType === 'Meccan' ? 'مکی' : 'مدنی'} ·{' '}
-                      <span className="latin">{s.englishName}</span>
+                      {toUrduDigits(s.numberOfAyahs)} آیات · {s.revelationType === 'Meccan' ? 'مکی' : 'مدنی'}
                     </span>
                   </span>
                   <span className="surah-row__arabic" lang="ar">

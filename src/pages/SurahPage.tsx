@@ -64,7 +64,7 @@ export function SurahPage() {
         }
         if (visible.size) setLastRead({ surah: surahNo, ayah: Math.min(...visible) })
       },
-      { rootMargin: '-80px 0px -40% 0px', threshold: 0 },
+      { rootMargin: '-70px 0px -40% 0px', threshold: 0 },
     )
     listRef.current.querySelectorAll<HTMLElement>('[data-ayah]').forEach((el) => io.observe(el))
     return () => io.disconnect()
@@ -106,21 +106,23 @@ export function SurahPage() {
 
         {data && (
           <div ref={listRef}>
-            {data.hasBismillah && (
-              <p className="bismillah" lang="ar">
-                {BISMILLAH}
-              </p>
-            )}
-            {data.ayahs.map((a) => (
-              <AyahCard
-                key={a.number}
-                surah={surahNo}
-                ayah={a}
-                bookmarked={bookmarkedSet.has(a.numberInSurah)}
-                highlighted={highlight === a.numberInSurah}
-                onToggleBookmark={onToggleBookmark}
-              />
-            ))}
+            <div className="sheet">
+              {data.hasBismillah && (
+                <p className="bismillah" lang="ar">
+                  {BISMILLAH}
+                </p>
+              )}
+              {data.ayahs.map((a) => (
+                <AyahCard
+                  key={a.number}
+                  surah={surahNo}
+                  ayah={a}
+                  bookmarked={bookmarkedSet.has(a.numberInSurah)}
+                  highlighted={highlight === a.numberInSurah}
+                  onToggleBookmark={onToggleBookmark}
+                />
+              ))}
+            </div>
 
             <div className="card" style={{ textAlign: 'center' }}>
               <p className="muted" style={{ margin: '0 0 12px' }}>
@@ -146,7 +148,7 @@ export function SurahPage() {
       <nav className="bottom-bar" aria-label="پڑھنے کے اختیارات">
         <div className="bottom-bar__inner">
           <button
-            className="btn"
+            className="btn btn--nav"
             disabled={!prev}
             onClick={() => prev && navigate(`/surah/${prev}`)}
             aria-label="پچھلی سورت"
@@ -181,7 +183,7 @@ export function SurahPage() {
             <span className="latin">A+</span>
           </button>
           <button
-            className="btn"
+            className="btn btn--nav"
             disabled={!next}
             onClick={() => next && navigate(`/surah/${next}`)}
             aria-label="اگلی سورت"
