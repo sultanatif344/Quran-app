@@ -28,9 +28,10 @@
   --radius: 20px;
   --radius-sm: 14px;
 
-  /* Sizing — font scale is set by the settings store (0.85 … 1.5) */
+  /* Sizing — the font scale (set by the settings store) applies only to the reading
+     text; buttons, headers, and lists keep a fixed size. */
   --font-scale: 1;
-  --ui-size: calc(17px * var(--font-scale));
+  --ui-size: 17px;
   --arabic-size: calc(30px * var(--font-scale));
   --urdu-size: calc(22px * var(--font-scale));
   --touch: 52px;
