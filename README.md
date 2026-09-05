@@ -9,7 +9,9 @@ Arabic (Uthmani script) and an Urdu translation directly beneath it.
   one printed page (Madani mushaf numbering) at a time, with para and page number in the header
 - Translation on tap: touch any ayah to open a bottom sheet with its Urdu (Nastaliq), or switch
   to "translation below each ayah" in Settings
-- Two Arabic scripts: Indo-Pak style simple orthography in bold Naskh (default) or Uthmani
+- Two Arabic scripts: Indo-Pak style in the PDMS Saleem QuranFont (default) or Uthmani in Amiri Quran.
+  The PDMS font (Pakistan Data Management Services, 2007) is free for personal, non-commercial use
+  and is self-hosted from `public/fonts/`.
 - Adjustable text size (A− / A+)
 - Chestnut-brown day theme and a warm night theme
 - Surah list with search by number, Arabic, English or Urdu name

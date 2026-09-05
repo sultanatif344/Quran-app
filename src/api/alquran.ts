@@ -181,3 +181,8 @@ export function groupByPage(ayahs: Ayah[]): MushafPage[] {
 }
 
 export const BISMILLAH = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
+export const BISMILLAH_SIMPLE = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+
+export function bismillahFor(script: ArabicScript): string {
+  return script === 'simple' ? BISMILLAH_SIMPLE : BISMILLAH
+}

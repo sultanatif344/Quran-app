@@ -149,6 +149,7 @@ export function SurahPage() {
             page={page}
             isFirstPage={pageIdx === 0}
             showBismillah={data.hasBismillah}
+            script={data.script}
             mode={settings.translationMode}
             selectedAyah={selected}
             bookmarked={bookmarkedSet}

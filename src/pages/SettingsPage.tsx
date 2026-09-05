@@ -20,7 +20,7 @@ const MODES: { id: TranslationMode; label: string; sub: string }[] = [
 ]
 
 const SCRIPTS: { id: ArabicScript; label: string; sub: string }[] = [
-  { id: 'simple', label: 'برصغیر کا رسم الخط', sub: 'پاکستانی و ہندوستانی مصاحف جیسا' },
+  { id: 'simple', label: 'برصغیر کا رسم الخط', sub: 'پاکستانی مصاحف جیسا (PDMS سلیم قرآن فونٹ)' },
   { id: 'uthmani', label: 'رسمِ عثمانی', sub: 'مدینہ کے مصحف جیسا' },
 ]
 

@@ -31,7 +31,7 @@
   /* Sizing — font scale is set by the settings store (0.85 … 1.5) */
   --font-scale: 1;
   --ui-size: calc(17px * var(--font-scale));
-  --arabic-size: calc(27px * var(--font-scale));
+  --arabic-size: calc(30px * var(--font-scale));
   --urdu-size: calc(22px * var(--font-scale));
   --touch: 52px;
 

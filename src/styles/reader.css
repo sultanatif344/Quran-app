@@ -3,12 +3,21 @@
   padding-top: 10px;
 }
 
-/* Arabic face follows the script setting: bold Naskh for Indo-Pak style, Amiri for Uthmani. */
+/* PDMS Saleem QuranFont — the Indo-Pak printed mushaf face (Pakistan Data Management
+   Services, free for personal use). Self-hosted from /public/fonts. */
+@font-face {
+  font-family: 'PDMS Saleem QuranFont';
+  src: url('/Quran-app/fonts/pdms-saleem-quranfont.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Arabic face follows the script setting: PDMS for Indo-Pak style, Amiri for Uthmani. */
 :root[data-script='simple'] {
-  /* Scheherazade New Bold is the closest open font to the Indo-Pak printed mushaf. */
-  --font-arabic: 'Scheherazade New', 'Noto Naskh Arabic', serif;
-  --arabic-weight: 700;
-  --arabic-lh: 1.95;
+  --font-arabic: 'PDMS Saleem QuranFont', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --arabic-weight: 400;
+  --arabic-lh: 2.1;
 }
 :root[data-script='uthmani'] {
   --font-arabic: 'Amiri Quran', 'Scheherazade New', 'Noto Naskh Arabic', serif;
@@ -65,10 +74,11 @@
   color: var(--primary);
 }
 .mushaf__banner-name {
-  font-family: var(--font-arabic);
-  font-weight: var(--arabic-weight);
+  /* Surah names come in Uthmani orthography; always draw them in the calligraphic face. */
+  font-family: 'Amiri Quran', 'Scheherazade New', serif;
+  font-weight: 400;
   font-size: calc(var(--arabic-size) * 0.85);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .mushaf__banner-meta {
   font-size: calc(var(--ui-size) * 0.78);

@@ -13,7 +13,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png', 'fonts/*.ttf'],
       manifest: {
         name: 'قرآن مجید — اردو ترجمہ',
         short_name: 'قرآن مجید',
@@ -33,7 +33,7 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: `${BASE}index.html`,
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,ttf}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

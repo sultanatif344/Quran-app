@@ -1,5 +1,6 @@
 import type { MushafPage as MushafPageData, SurahMeta } from '../api/alquran'
-import { BISMILLAH } from '../api/alquran'
+import { bismillahFor } from '../api/alquran'
+import type { ArabicScript } from '../api/alquran'
 import { surahNameUrdu, toUrduDigits } from '../data/surahNamesUrdu'
 import type { TranslationMode } from '../store/settings'
 
@@ -9,6 +10,7 @@ interface Props {
   /** True when this page holds ayah 1 of the surah (show title banner + Bismillah). */
   isFirstPage: boolean
   showBismillah: boolean
+  script: ArabicScript
   mode: TranslationMode
   selectedAyah: number | null
   bookmarked: Set<number>
@@ -20,6 +22,7 @@ export function MushafPage({
   page,
   isFirstPage,
   showBismillah,
+  script,
   mode,
   selectedAyah,
   bookmarked,
@@ -44,7 +47,7 @@ export function MushafPage({
         )}
         {isFirstPage && showBismillah && (
           <p className="mushaf__bismillah" lang="ar">
-            {BISMILLAH}
+            {bismillahFor(script)}
           </p>
         )}
 
