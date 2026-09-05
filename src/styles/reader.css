@@ -245,7 +245,8 @@
   align-items: stretch;
   flex: 1 1 auto;
   min-width: 3em;
-  max-width: 100%;
+  /* a lone box on a wrapped row should not balloon across the whole width */
+  max-width: 55%;
   border-inline-start: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
   margin-bottom: -1px;

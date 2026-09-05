@@ -339,6 +339,7 @@ select {
   gap: 4px;
   padding: 6px;
   border-radius: 999px;
+  background: var(--surface);
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   backdrop-filter: blur(14px) saturate(1.2);
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
