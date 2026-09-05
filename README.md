@@ -5,9 +5,10 @@ Arabic (Uthmani script) and an Urdu translation directly beneath it.
 
 ## Features
 
-- Lafzi Tarjuma (word-by-word) layout modelled on the Anjuman Himayat-e-Islam print: for every
-  ayah, the Arabic line, then a ruled row of boxes with each Arabic word above its Urdu meaning,
-  then the running Urdu translation, all inside the printed-style frame
+- Lafzi Tarjuma (word-by-word) layout modelled on the Anjuman Himayat-e-Islam print, grouped by
+  printed mushaf line: the Arabic line (with the ayahs flowing together), then a ruled row of boxes
+  with each Arabic word above its Urdu meaning, then the running translation of the ayahs that end
+  on that line, all inside the printed-style frame
 - Organised by parah (juz): the home screen lists the 30 parahs by their traditional names, and
   the reader shows one printed mushaf page at a time with parah, surah, and page number in the
   header. A surah list (with search) is one tap away and opens the parah where that surah begins

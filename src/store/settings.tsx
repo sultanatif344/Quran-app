@@ -17,7 +17,7 @@ export const FONT_SCALES = [0.6, 0.7, 0.85, 1, 1.15, 1.3, 1.5]
 export const FONT_LABELS_URDU = ['بہت چھوٹا', 'چھوٹا', 'ذرا چھوٹا', 'درمیانہ', 'بڑا', 'بہت بڑا', 'سب سے بڑا']
 export const MAX_STEP = FONT_SCALES.length - 1
 
-const STORAGE_KEY = 'quran-settings-v2'
+const STORAGE_KEY = 'quran-settings-v3'
 
 const DEFAULTS: Settings = {
   fontStep: 3,
@@ -28,9 +28,16 @@ const DEFAULTS: Settings = {
 
 function load(): Settings {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    let raw = localStorage.getItem(STORAGE_KEY)
+    let migrated = false
+    if (!raw) {
+      // v2 → v3: keep font/theme/script, but take the new default translation.
+      raw = localStorage.getItem('quran-settings-v2')
+      migrated = true
+    }
     if (!raw) return DEFAULTS
     const parsed = JSON.parse(raw) as Partial<Settings>
+    if (migrated) parsed.urduEdition = DEFAULTS.urduEdition
     return {
       fontStep: Math.min(MAX_STEP, Math.max(0, Number(parsed.fontStep ?? DEFAULTS.fontStep))),
       theme: parsed.theme ?? DEFAULTS.theme,

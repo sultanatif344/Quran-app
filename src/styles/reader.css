@@ -16,12 +16,12 @@
 :root[data-script='simple'] {
   --font-arabic: 'PDMS Saleem QuranFont', 'Scheherazade New', 'Noto Naskh Arabic', serif;
   --arabic-weight: 400;
-  --arabic-lh: 2;
+  --arabic-lh: 1.9;
 }
 :root[data-script='uthmani'] {
   --font-arabic: 'Amiri Quran', 'Scheherazade New', 'Noto Naskh Arabic', serif;
   --arabic-weight: 400;
-  --arabic-lh: 2.1;
+  --arabic-lh: 2;
 }
 
 /* Rule colour for the printed-table look */
@@ -64,15 +64,10 @@
   border: 2px solid var(--rule);
   padding: 4px;
   box-shadow: var(--shadow-sm);
-}
-.mushaf__frame--lafzi {
   border-radius: 3px;
 }
-.mushaf__frame--lafzi > div {
+.mushaf__inner {
   border: 1px solid var(--rule);
-}
-.mushaf__frame--lafzi > div + div {
-  border-top: none;
 }
 
 /* ---- Surah header ---- */
@@ -80,8 +75,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px 16px;
+  gap: 0;
+  padding: 6px 16px 4px;
   border-bottom: 1px solid var(--rule);
   background:
     linear-gradient(90deg, transparent, var(--gold-soft) 18%, var(--gold-soft) 82%, transparent);
@@ -89,76 +84,66 @@
 }
 .lafzi-surah__name {
   font-family: 'Amiri Quran', 'Scheherazade New', serif;
-  font-size: calc(var(--arabic-size) * 0.9);
-  line-height: 1.6;
+  font-size: calc(var(--arabic-size) * 0.85);
+  line-height: 1.5;
 }
 .lafzi-surah__meta {
-  font-size: calc(var(--ui-size) * 0.78);
+  font-size: calc(var(--ui-size) * 0.75);
   color: var(--text-muted);
 }
 
-/* ---- One ayah block: Arabic line / word boxes / running translation ---- */
+/* ---- One printed line: Arabic / word boxes / running translation ---- */
 .lafzi {
-  position: relative;
   border-bottom: 1px solid var(--rule);
 }
-.lafzi:last-child,
-.lafzi--bismillah {
+.mushaf__inner > div:last-child > .lafzi:last-child {
   border-bottom: none;
-}
-.lafzi--bismillah {
-  border-bottom: 1px solid var(--rule);
-}
-.lafzi.is-highlighted {
-  background: var(--gold-soft);
-}
-.lafzi.is-bookmarked {
-  box-shadow: inset 4px 0 0 var(--gold);
 }
 
 .lafzi__arabic {
   margin: 0;
-  padding: 6px 14px 2px;
+  padding: 2px 10px 0;
   direction: rtl;
-  text-align: right;
+  text-align: justify;
+  text-align-last: right;
   font-family: var(--font-arabic);
   font-weight: var(--arabic-weight);
   font-size: var(--arabic-size);
   line-height: var(--arabic-lh);
-  word-spacing: 0.1em;
+  word-spacing: 0.08em;
   color: var(--text);
 }
 .lafzi__arabic--center {
   text-align: center;
+  text-align-last: center;
+}
+.lafzi__ayah {
+  border-radius: 4px;
+  transition: background 0.3s;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.lafzi__ayah.is-highlighted,
+.lafzi__tr-ayah.is-highlighted {
+  background: var(--gold-soft);
 }
 .lafzi__marker {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.25em;
-  height: 1.25em;
+  min-width: 1.2em;
+  height: 1.2em;
   margin: 0 0.3em;
-  padding: 0 0.2em;
+  padding: 0 0.15em;
   border-radius: 50%;
   border: 1.5px solid var(--rule-soft);
   color: var(--text);
   font-family: var(--font-ui);
   font-weight: 700;
-  font-size: 0.5em;
+  font-size: 0.48em;
   line-height: 1;
-  vertical-align: 0.25em;
+  vertical-align: 0.3em;
   user-select: none;
-}
-.lafzi__sajda {
-  font-family: var(--font-ui);
-  font-size: 0.4em;
-  vertical-align: middle;
-  margin-inline-start: 0.5em;
-  padding: 0.15em 0.7em;
-  border-radius: 999px;
-  background: var(--gold-soft);
-  color: var(--chestnut-700);
-  font-weight: 600;
 }
 
 /* Word boxes: a ruled table that wraps right-to-left */
@@ -167,8 +152,6 @@
   flex-wrap: wrap;
   direction: rtl;
   border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  /* the cells draw their own right/bottom rules; this hides the doubled outer edges */
   margin-inline-end: -1px;
 }
 .lafzi__cell {
@@ -176,7 +159,7 @@
   flex-direction: column;
   align-items: stretch;
   flex: 1 1 auto;
-  min-width: 3.2em;
+  min-width: 3em;
   max-width: 100%;
   border-inline-start: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
@@ -188,51 +171,62 @@
 }
 .lafzi__word {
   display: block;
-  padding: 2px 8px 0;
+  padding: 1px 6px 0;
   direction: rtl;
   font-family: var(--font-arabic);
   font-weight: var(--arabic-weight);
-  font-size: calc(var(--arabic-size) * 0.72);
-  line-height: 1.9;
+  font-size: calc(var(--arabic-size) * 0.7);
+  line-height: 1.8;
   border-bottom: 1px solid var(--rule-soft);
   white-space: nowrap;
   color: var(--text);
 }
 .lafzi__meaning {
   display: block;
-  padding: 2px 8px 4px;
+  padding: 0 6px 2px;
   direction: rtl;
   font-family: var(--font-urdu);
-  font-size: calc(var(--urdu-size) * 0.72);
-  line-height: 1.9;
+  font-size: calc(var(--urdu-size) * 0.7);
+  line-height: 1.85;
   color: var(--text);
 }
 
+/* Running translation row: ayahs flow together, separated by their number */
 .lafzi__tr {
   margin: 0;
-  padding: 6px 14px 10px;
+  padding: 2px 10px 4px;
+  border-top: 1px solid var(--rule);
   direction: rtl;
   text-align: right;
   font-family: var(--font-urdu);
-  font-size: calc(var(--urdu-size) * 0.9);
-  line-height: 2;
+  font-size: calc(var(--urdu-size) * 0.88);
+  line-height: 1.95;
   color: var(--text);
 }
-
+.lafzi__tr-ayah {
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.lafzi__tr-num {
+  font-family: var(--font-ui);
+  font-size: 0.7em;
+  color: var(--text-muted);
+  margin: 0 0.3em;
+}
 .lafzi__bookmark {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 36px;
-  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 0.1em;
+  vertical-align: middle;
   border-radius: 50%;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: pointer;
-  display: grid;
-  place-items: center;
   -webkit-tap-highlight-color: transparent;
 }
 .lafzi__bookmark[aria-pressed='true'] {
@@ -244,11 +238,14 @@
   opacity: 1;
 }
 
+/* Bismillah block inside a surah header */
+.lafzi--bismillah .lafzi__arabic {
+  padding-top: 4px;
+}
+
 @media (min-width: 560px) {
-  .lafzi__arabic {
-    padding-inline: 20px;
-  }
+  .lafzi__arabic,
   .lafzi__tr {
-    padding-inline: 20px;
+    padding-inline: 16px;
   }
 }

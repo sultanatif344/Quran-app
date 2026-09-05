@@ -5,12 +5,31 @@ import type { ArabicScript, VerseWords } from './quranCom'
 export interface Entry extends VerseWords {
   /** Full-ayah Urdu translation (chosen edition). */
   urdu: string
-  /** True when this ayah opens a surah (show banner + Bismillah before it). */
-  surahStart: boolean
+}
+
+export interface LineWord {
+  arabic: string
+  urdu: string
+  surah: number
+  ayah: number
+  /** Last word of its ayah — the ayah marker follows it. */
+  ayahEnd: boolean
+}
+
+/** One printed line of the mushaf: its words flow together like the print. */
+export interface Line {
+  line: number
+  surah: number
+  /** True when ayah 1 of a surah begins on this line (show the surah header before it). */
+  startsSurah: boolean
+  words: LineWord[]
+  /** Ayahs whose final word is on this line — their running translation goes under it. */
+  ended: Entry[]
 }
 
 export interface JuzPageData {
   page: number
+  lines: Line[]
   entries: Entry[]
 }
 
@@ -21,6 +40,31 @@ export interface JuzData {
   bismillah: VerseWords
   bismillahUrdu: string
   pages: JuzPageData[]
+}
+
+function buildLines(entries: Entry[]): Line[] {
+  const lines: Line[] = []
+  for (const e of entries) {
+    // Surah 1's ayah 1 is the Bismillah; the surah header already shows it.
+    const skip = e.surah === 1 && e.ayah === 1
+    if (skip) {
+      // still mark the surah start on the next line via a synthetic flag
+      continue
+    }
+    e.words.forEach((w, i) => {
+      let last = lines[lines.length - 1]
+      if (!last || last.line !== w.line || last.surah !== e.surah) {
+        last = { line: w.line, surah: e.surah, startsSurah: false, words: [], ended: [] }
+        lines.push(last)
+      }
+      if (e.ayah === 1 && i === 0) last.startsSurah = true
+      if (e.surah === 1 && e.ayah === 2 && i === 0) last.startsSurah = true
+      const ayahEnd = i === e.words.length - 1
+      last.words.push({ arabic: w.arabic, urdu: w.urdu, surah: e.surah, ayah: e.ayah, ayahEnd })
+      if (ayahEnd) last.ended.push(e)
+    })
+  }
+  return lines
 }
 
 export async function fetchJuz(
@@ -36,17 +80,18 @@ export async function fetchJuz(
     fetchBismillahTranslation(urduEdition, signal),
   ])
 
-  const pages: JuzPageData[] = []
+  const byPage = new Map<number, Entry[]>()
   for (const v of verses) {
-    const entry: Entry = {
-      ...v,
-      urdu: translations[`${v.surah}:${v.ayah}`] ?? '',
-      surahStart: v.ayah === 1,
-    }
-    const last = pages[pages.length - 1]
-    if (last && last.page === v.page) last.entries.push(entry)
-    else pages.push({ page: v.page, entries: [entry] })
+    const entry: Entry = { ...v, urdu: translations[`${v.surah}:${v.ayah}`] ?? '' }
+    const list = byPage.get(v.page) ?? []
+    list.push(entry)
+    byPage.set(v.page, list)
   }
+
+  const pages: JuzPageData[] = [...byPage.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([page, entries]) => ({ page, entries, lines: buildLines(entries) }))
+
   return { juz, urduEdition, script, bismillah, bismillahUrdu, pages }
 }
 

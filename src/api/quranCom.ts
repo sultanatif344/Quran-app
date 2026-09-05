@@ -13,6 +13,8 @@ export interface Word {
   arabic: string
   /** Urdu meaning of this word. */
   urdu: string
+  /** Line of the printed (Madani) mushaf page this word sits on, 1–15. */
+  line: number
 }
 
 export interface VerseWords {
@@ -27,6 +29,7 @@ export interface VerseWords {
 
 interface ApiWord {
   char_type_name: 'word' | 'end' | string
+  line_number: number
   text_indopak?: string
   text_uthmani?: string
   translation?: { text: string }
@@ -78,6 +81,7 @@ function mapVerse(v: ApiVerse, script: ArabicScript): VerseWords {
       .map((w) => ({
         arabic: cleanArabic(w[field] ?? ''),
         urdu: (w.translation?.text ?? '').trim(),
+        line: w.line_number,
       })),
   }
 }

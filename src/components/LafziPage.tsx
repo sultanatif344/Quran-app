@@ -1,5 +1,5 @@
 import type { SurahMeta } from '../api/alquran'
-import type { Entry, JuzPageData } from '../api/juz'
+import type { Entry, JuzPageData, Line } from '../api/juz'
 import type { VerseWords } from '../api/quranCom'
 import { juzName } from '../data/juzNames'
 import { surahNameUrdu, toUrduDigits } from '../data/surahNamesUrdu'
@@ -15,68 +15,112 @@ interface Props {
   onToggleBookmark: (surah: number, ayah: number) => void
 }
 
-/** One ruled block: Arabic line, word boxes, running translation. */
-function LafziAyah({
-  entry,
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path
+        d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"
+        fill={filled ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function WordBoxes({ words }: { words: { arabic: string; urdu: string }[] }) {
+  return (
+    <div className="lafzi__words" role="list">
+      {words.map((w, i) => (
+        <div className="lafzi__cell" role="listitem" key={i}>
+          <span className="lafzi__word" lang="ar">
+            {w.arabic}
+          </span>
+          <span className="lafzi__meaning" lang="ur">
+            {w.urdu}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** One printed line: flowing Arabic, its word boxes, then the translation of ayahs ending here. */
+function LafziLine({
+  line,
   bookmarked,
   highlighted,
   onToggleBookmark,
 }: {
-  entry: Entry
-  bookmarked: boolean
-  highlighted: boolean
-  onToggleBookmark: () => void
+  line: Line
+  bookmarked: Set<string>
+  highlighted: string | null
+  onToggleBookmark: (surah: number, ayah: number) => void
 }) {
+  // Group consecutive words by ayah so each ayah can be highlighted as one span.
+  const groups: { key: string; ayah: number; words: typeof line.words }[] = []
+  for (const w of line.words) {
+    const key = `${w.surah}:${w.ayah}`
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) last.words.push(w)
+    else groups.push({ key, ayah: w.ayah, words: [w] })
+  }
+
   return (
-    <article
-      id={`ayah-${entry.surah}-${entry.ayah}`}
-      className={`lafzi${highlighted ? ' is-highlighted' : ''}${bookmarked ? ' is-bookmarked' : ''}`}
-      data-ayah={`${entry.surah}:${entry.ayah}`}
-      aria-label={`آیت ${toUrduDigits(entry.ayah)}`}
-    >
+    <div className="lafzi">
       <p className="lafzi__arabic" lang="ar">
-        {entry.arabic}
-        <span className="lafzi__marker" aria-hidden="true">
-          {toUrduDigits(entry.ayah)}
-        </span>
-        {entry.sajda && <span className="lafzi__sajda">سجدہ</span>}
-      </p>
-
-      <div className="lafzi__words" role="list">
-        {entry.words.map((w, i) => (
-          <div className="lafzi__cell" role="listitem" key={i}>
-            <span className="lafzi__word" lang="ar">
-              {w.arabic}
-            </span>
-            <span className="lafzi__meaning" lang="ur">
-              {w.urdu}
-            </span>
-          </div>
+        {groups.map((g) => (
+          <span
+            key={g.key}
+            id={`ayah-${g.key.replace(':', '-')}`}
+            className={`lafzi__ayah${highlighted === g.key ? ' is-highlighted' : ''}`}
+            data-ayah={g.key}
+          >
+            {g.words.map((w, i) => (
+              <span key={i}>
+                {w.arabic}
+                {w.ayahEnd ? (
+                  <span className="lafzi__marker" aria-hidden="true">
+                    {toUrduDigits(w.ayah)}
+                  </span>
+                ) : (
+                  ' '
+                )}
+              </span>
+            ))}{' '}
+          </span>
         ))}
-      </div>
-
-      <p className="lafzi__tr" lang="ur">
-        {entry.urdu}
       </p>
 
-      <button
-        type="button"
-        className="lafzi__bookmark"
-        aria-pressed={bookmarked}
-        aria-label={bookmarked ? 'نشانی ہٹائیں' : 'نشانی لگائیں'}
-        onClick={onToggleBookmark}
-      >
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path
-            d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"
-            fill={bookmarked ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-    </article>
+      <WordBoxes words={line.words} />
+
+      {line.ended.length > 0 && (
+        <p className="lafzi__tr" lang="ur">
+          {line.ended.map((e: Entry) => {
+            const key = `${e.surah}:${e.ayah}`
+            const isBookmarked = bookmarked.has(key)
+            return (
+              <span key={key} className={`lafzi__tr-ayah${highlighted === key ? ' is-highlighted' : ''}`}>
+                {e.urdu}
+                <span className="lafzi__tr-num" aria-hidden="true">
+                  ({toUrduDigits(e.ayah)})
+                </span>
+                <button
+                  type="button"
+                  className="lafzi__bookmark"
+                  aria-pressed={isBookmarked}
+                  aria-label={isBookmarked ? `آیت ${toUrduDigits(e.ayah)} کی نشانی ہٹائیں` : `آیت ${toUrduDigits(e.ayah)} پر نشانی لگائیں`}
+                  onClick={() => onToggleBookmark(e.surah, e.ayah)}
+                >
+                  <BookmarkIcon filled={isBookmarked} />
+                </button>{' '}
+              </span>
+            )
+          })}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -106,18 +150,7 @@ function SurahHeader({
           <p className="lafzi__arabic lafzi__arabic--center" lang="ar">
             {bismillah.arabic}
           </p>
-          <div className="lafzi__words" role="list">
-            {bismillah.words.map((w, i) => (
-              <div className="lafzi__cell" role="listitem" key={i}>
-                <span className="lafzi__word" lang="ar">
-                  {w.arabic}
-                </span>
-                <span className="lafzi__meaning" lang="ur">
-                  {w.urdu}
-                </span>
-              </div>
-            ))}
-          </div>
+          <WordBoxes words={bismillah.words} />
           <p className="lafzi__tr" lang="ur">
             {bismillahUrdu}
           </p>
@@ -133,33 +166,31 @@ export function LafziPage({ juz, page, bismillah, bismillahUrdu, surahs, bookmar
     <section className="mushaf" aria-label={`صفحہ ${toUrduDigits(page.page)}`}>
       <header className="mushaf__head">
         <span>
-          پارہ {toUrduDigits(juz)} <span className="mushaf__head-juz" lang="ar">{juzName(juz)}</span>
+          پارہ {toUrduDigits(juz)}{' '}
+          <span className="mushaf__head-juz" lang="ar">
+            {juzName(juz)}
+          </span>
         </span>
         <span className="mushaf__head-title">سورۃ {surahNameUrdu(firstSurah)}</span>
         <span>صفحہ {toUrduDigits(page.page)}</span>
       </header>
 
       <div className="mushaf__frame mushaf__frame--lafzi">
-        {page.entries.map((e) => {
-          const key = `${e.surah}:${e.ayah}`
-          // Surah 1's ayah 1 is the Bismillah itself; the header already shows it.
-          const skipBody = e.surah === 1 && e.ayah === 1
-          return (
-            <div key={key}>
-              {e.surahStart && (
-                <SurahHeader meta={surahs.get(e.surah)} number={e.surah} bismillah={bismillah} bismillahUrdu={bismillahUrdu} />
-              )}
-              {!skipBody && (
-                <LafziAyah
-                  entry={e}
-                  bookmarked={bookmarked.has(key)}
-                  highlighted={highlighted === key}
-                  onToggleBookmark={() => onToggleBookmark(e.surah, e.ayah)}
+        <div className="mushaf__inner">
+          {page.lines.map((line) => (
+            <div key={`${line.surah}-${line.line}`}>
+              {line.startsSurah && (
+                <SurahHeader
+                  meta={surahs.get(line.surah)}
+                  number={line.surah}
+                  bismillah={bismillah}
+                  bismillahUrdu={bismillahUrdu}
                 />
               )}
+              <LafziLine line={line} bookmarked={bookmarked} highlighted={highlighted} onToggleBookmark={onToggleBookmark} />
             </div>
-          )
-        })}
+          ))}
+        </div>
       </div>
     </section>
   )
